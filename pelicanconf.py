@@ -44,3 +44,14 @@ SITEDESCRIPTION = 'Daily Learning Journal'
 USE_SHORTCUT_ICONS = True
 SOCIAL_PROFILE_LABEL = 'Stay in Touch'
 RECENT_ARTICLES_COUNT = 10
+
+# Add static paths
+STATIC_PATHS = ['images', 'extra']
+
+# Ensure proper path handling
+USE_FOLDER_AS_CATEGORY = False
+PATH_METADATA = '(?P<path_no_ext>[^.]+)'
+
+# Server settings
+PORT = 8080
+BIND = '127.0.0.1'
