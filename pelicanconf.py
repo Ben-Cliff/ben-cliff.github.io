@@ -1,6 +1,6 @@
-AUTHOR = 'Your Name'
+AUTHOR = 'Ben Cliff'
 SITENAME = 'Today I Learned'
-SITEURL = 'https://ben-cliff.github.io'  # Your GitHub Pages URL
+SITEURL = 'https://ben-cliff.github.io'  # Remove any trailing dots
 
 PATH = 'content'
 TIMEZONE = 'Europe/London'  # Adjust to your timezone
@@ -31,7 +31,7 @@ DISPLAY_CATEGORIES_ON_MENU = True
 
 # Optional social links
 SOCIAL = (
-    ('github', 'your-github-url'),
+    ('github', 'https://github.com/Ben-Cliff'),
 )
 
 # Elegant theme specific settings
