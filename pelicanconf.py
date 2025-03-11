@@ -1,6 +1,6 @@
 AUTHOR = 'Your Name'
 SITENAME = 'Today I Learned'
-SITEURL = ''  # Leave empty for development
+SITEURL = 'https://ben-cliff.github.io'  # Your GitHub Pages URL
 
 PATH = 'content'
 TIMEZONE = 'Europe/London'  # Adjust to your timezone
