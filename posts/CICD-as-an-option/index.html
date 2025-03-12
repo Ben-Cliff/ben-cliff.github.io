@@ -15,18 +15,18 @@
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary">
 
-<meta name="keywords" content="onboarding, culture, engineering-culture, Engineering Culture, " />
+<meta name="keywords" content="engineering-culture, ci/cd, git, github, Engineering Culture, " />
 
-<meta property="og:title" content="Onboarding &amp; Engineering Culture - how your first three weeks can predict the next 3 years "/>
-<meta property="og:url" content="https://ben-cliff.github.io/posts/onboarding-reflection/" />
-<meta property="og:description" content="Onboarding &amp; Engineering Culture - how your first three weeks can predict the future Looking back at this project, I recognize it as a textbook example of how poor onboarding practices lead to technical debt and suboptimal solutions. As my first assignment at the company, I was thrust into creating this makeshift …" />
+<meta property="og:title" content="When Best Practices Meet Reality: A Lesson in Engineering Flexibility "/>
+<meta property="og:url" content="https://ben-cliff.github.io/posts/CICD-as-an-option/" />
+<meta property="og:description" content="In my journey as a data engineer, I&#39;ve come to understand that textbook engineering approaches don&#39;t always translate perfectly to real-world scenarios. One experience in particular stands out as a profound learning moment that shaped my approach to technical disagreements and team collaboration. Often times, I must admit it, I …" />
 <meta property="og:site_name" content="Today I Learned" />
 <meta property="og:article:author" content="Ben Cliff" />
 <meta property="og:article:published_time" content="2024-03-20T00:00:00+00:00" />
-<meta name="twitter:title" content="Onboarding &amp; Engineering Culture - how your first three weeks can predict the next 3 years ">
-<meta name="twitter:description" content="Onboarding &amp; Engineering Culture - how your first three weeks can predict the future Looking back at this project, I recognize it as a textbook example of how poor onboarding practices lead to technical debt and suboptimal solutions. As my first assignment at the company, I was thrust into creating this makeshift …">
+<meta name="twitter:title" content="When Best Practices Meet Reality: A Lesson in Engineering Flexibility ">
+<meta name="twitter:description" content="In my journey as a data engineer, I&#39;ve come to understand that textbook engineering approaches don&#39;t always translate perfectly to real-world scenarios. One experience in particular stands out as a profound learning moment that shaped my approach to technical disagreements and team collaboration. Often times, I must admit it, I …">
 
-        <title>Onboarding &amp; Engineering Culture - how your first three weeks can predict the next 3 years  · Today I Learned
+        <title>When Best Practices Meet Reality: A Lesson in Engineering Flexibility  · Today I Learned
 </title>
         <link rel="shortcut icon" href="https://ben-cliff.github.io/theme/images/favicon.ico" type="image/x-icon" />
         <link rel="icon" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-152x152.png" type="image/png" />
@@ -78,8 +78,8 @@
 <div class="row-fluid">
     <header class="page-header span10 offset2">
         <h1>
-            <a href="https://ben-cliff.github.io/posts/onboarding-reflection/">
-                Onboarding & Engineering Culture - how your first three weeks can predict the next 3 years
+            <a href="https://ben-cliff.github.io/posts/CICD-as-an-option/">
+                When Best Practices Meet Reality: A Lesson in Engineering Flexibility
             </a>
         </h1>
     </header>
@@ -88,22 +88,30 @@
 <div class="row-fluid">
         <div class="span8 offset2 article-content">
             
-            <h1>Onboarding &amp; Engineering Culture - how your first three weeks can predict the future</h1>
-<p>Looking back at this project, I recognize it as a textbook example of how poor onboarding practices lead to technical debt and suboptimal solutions. As my first assignment at the company, I was thrust into creating this makeshift data pipeline without proper context, resources, or time to understand organizational best practices.</p>
-<p>When companies rush new engineers into "proving themselves" through quick wins rather than investing in proper onboarding, they inadvertently institutionalize short-term thinking. My Lambda-based solution, while functional, represented exactly this pattern – a technical workaround that addressed immediate needs but created long-term maintenance challenges.</p>
-<p>The stressful nature of this experience reflects a broader issue in tech culture: the expectation that engineers should hit the ground running without adequate support. New team members are often evaluated on their ability to deliver quickly rather than their capacity to build sustainable solutions aligned with company standards and architecture.</p>
-<p>Organizations with high employee turnover particularly suffer from this cycle. Without proper knowledge transfer or documentation, each wave of departing engineers leaves behind "quick fixes" that gradually calcify into critical systems. My improvised pipeline became one such system – difficult to maintain, challenging to expand, and expensive to replace.</p>
-<p>The technical debt wasn't just in the code; it manifested in organizational knowledge gaps. Without understanding why proper orchestration tools weren't available, I couldn't advocate effectively for better resources. Without knowing the full context of data needs, I couldn't design with future requirements in mind.</p>
-<p>Perhaps most concerning was how this pattern normalized emergency engineering. When quick hacks become standard practice, teams lose the ability to plan strategically and build robust systems. The constant fire-fighting creates a self-reinforcing cycle of pressure, burnout, and more hasty solutions.</p>
-<p>A healthier approach would have involved:</p>
-<ol>
-<li>A structured onboarding period with shadowing opportunities</li>
-<li>Clear documentation of technical constraints and available resources</li>
-<li>Time to explore alternative approaches rather than rushing to implementation</li>
-<li>Mentorship from experienced team members familiar with organizational patterns</li>
-</ol>
-<p>This experience taught me to recognize these warning signs in future roles and to advocate for proper onboarding – not just for my benefit, but for the long-term health of the engineering organization. Technical debt is often a symptom of organizational debt, and both require intentional investment to address.</p>
-<p>While I'm proud of my ability to deliver under pressure, I now understand that sustainable engineering requires balancing immediate delivery with long-term thinking – something nearly impossible without proper organizational support during onboarding.</p>
+            <p>In my journey as a data engineer, I've come to understand that textbook engineering approaches don't always translate perfectly to real-world scenarios. One experience in particular stands out as a profound learning moment that shaped my approach to technical disagreements and team collaboration.</p>
+<p>Often times, I must admit it, I have been jealous of backend engineers who have the luxury of working in a world where CI/CD is the norm and where if a crash happens, well.. it's kind of a big deal - money is one the line and customers are impacted.</p>
+<h2>Challenge</h2>
+<p>As the sole data engineer in a nascent three-person data team, I encountered a significant philosophical disagreement with my manager about our CI/CD practices for our dbt repository. Coming from an engineering background that emphasized stability and code quality, I strongly believed we needed proper branch protection and review processes before code could be merged into our main branch.</p>
+<p>My manager, who had more experience building data teams from scratch and liked to shoot from the proverbial hit, advocated for a more lightweight approach - allowing direct pushes to the main branch without formal reviews or protection. This approach ran counter to everything I understood about engineering best practices. It created genuine tension between my desire to implement what I saw as proper safeguards and my respect for my manager's experience.</p>
+<p>The challenge wasn't just technical but deeply personal: How could I reconcile my engineering principles with a completely different approach? Was I being too rigid in applying textbook solutions to our specific context? The situation forced me to examine whether I was prioritizing engineering ideals over practical needs.</p>
+<h2>Action</h2>
+<p>Rather than digging in my heels or quietly harboring disagreement, I took several deliberate steps:
+First, I clearly articulated my concerns about potential risks, explaining specifically how unreviewed code could lead to production issues that might affect our stakeholders.</p>
+<p>I used concrete examples from my experience to illustrate the potential problems.
+Second, I asked probing questions to understand my manager's rationale. Instead of framing the conversation as a debate to win, I approached it as an opportunity to learn from someone with different experiences and priorities.</p>
+<p>Third, I acknowledged the constraints we faced as a small team. We had limited resources and aggressive timelines, which might make formal processes burdensome.
+Most importantly, I made a conscious decision to trust my manager's judgment and agreed to try his approach, despite my reservations. I suggested we set clear expectations about reviewing the decision once we had more data about how it worked in practice.</p>
+<h2>Solution</h2>
+<p>The outcome was surprising and educational. Our lightweight approach did indeed allow us to move much faster than a more formal process would have permitted. While we did experience some production issues, they were manageable and less catastrophic than I had feared. The speed and agility we gained proved more valuable at our early stage than perfect stability.</p>
+<p>As our team and codebase grew, we gradually introduced more structure - adding some review processes for critical components while maintaining flexibility elsewhere. This hybrid approach emerged organically as we learned what worked for our specific context.
+The experience fundamentally changed my approach to engineering decisions. I learned that best practices are guidelines, not commandments, and their application should be tailored to specific circumstances. What works for a large, established engineering team may not be appropriate for a small, rapidly evolving data function.</p>
+<h2>Feedback</h2>
+<p>This experience provided several forms of feedback that shaped my professional development:
+Immediate feedback came from seeing our team's velocity increase. We delivered more features and insights faster than I had anticipated, which directly benefited our stakeholders. This concrete result challenged my assumption that formality always leads to better outcomes.</p>
+<p>Self-reflection revealed how my attachment to certain practices was partially rooted in my identity as an engineer rather than objective analysis of our needs. This awareness has made me more open to questioning my assumptions in other areas.
+My relationship with my manager strengthened through this disagreement. By showing that I could prioritize team success over being right, I built trust that has led to more meaningful collaboration on subsequent decisions.</p>
+<p>Most significantly, I gained a more nuanced understanding of engineering excellence. I now recognize that truly good engineering isn't about rigidly applying best practices, but about making thoughtful tradeoffs that balance immediate needs with long-term considerations.</p>
+<p>Today, when faced with similar decisions, I approach them with both principles and pragmatism, understanding that context matters enormously. I've learned to evaluate engineering choices not just by their technical merits but by how well they serve the broader goals of the team and organization. This balanced perspective has made me a more effective engineer and collaborator, capable of both advocating for good practices and adapting to the realities of each unique situation.</p>
 
 
              
@@ -127,13 +135,16 @@
             <a class="category-link" href="https://ben-cliff.github.io/categories.html#engineering-culture-ref">Engineering Culture</a>
             <h4>Tags</h4>
             <ul class="list-of-tags tags-in-article">
-                <li><a href="https://ben-cliff.github.io/tags.html#culture-ref">culture
+                <li><a href="https://ben-cliff.github.io/tags.html#cicd-ref">ci/cd
                     <span class="superscript">1</span>
 </a></li>
                 <li><a href="https://ben-cliff.github.io/tags.html#engineering-culture-ref">engineering-culture
                     <span class="superscript">3</span>
 </a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#onboarding-ref">onboarding
+                <li><a href="https://ben-cliff.github.io/tags.html#git-ref">git
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#github-ref">github
                     <span class="superscript">1</span>
 </a></li>
             </ul>
