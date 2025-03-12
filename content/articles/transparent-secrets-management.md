@@ -1,5 +1,5 @@
 Title: Fostering Responsible Engineering Through Transparent Secrets Management
-Date: 2024-03-20
+Date: 2023-07-01
 Category: Engineering Culture
 Tags: secrets-management, collaboration, bus-factor, knowledge-sharing, engineering-culture
 Slug: transparent-secrets-management
