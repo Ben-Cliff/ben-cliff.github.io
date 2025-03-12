@@ -1,5 +1,5 @@
 Title: Deliberate Friction - A Data Engineering Case Study
-Date: 2024-03-20
+Date: 2025-02-10
 Category: Data Engineering
 Tags: data-quality, architecture, pubsub, analytics, case-study
 Slug: deliberate-friction
