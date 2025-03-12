@@ -1,5 +1,5 @@
 Title: Reclaiming Bigquery: A DWH Table Deprecation Strategy
-Date: 2024-03-20
+Date: 2023-10-20
 Category: Data Engineering
 Tags: bigquery, data-warehouse, data-governance, data-lifecycle-management
 Slug: bigquery-table-deprecation
