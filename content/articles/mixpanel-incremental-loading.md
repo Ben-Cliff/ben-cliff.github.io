@@ -1,5 +1,5 @@
 Title: Mixpanel Incremental Processing: Conquering Extreme Data Volumes and Duplicate Events
-Date: 2024-03-20
+Date: 2024-08-07
 Category: Data Engineering
 Tags: dbt, bigquery, analytics, incremental-loading, Mixpanel, event-tracking
 Slug: mixpanel-incremental-loading
