@@ -1,6 +1,6 @@
 
 Title: Deploying Dagster: Our Infrastructure Implementation
-Date: 2024-03-20
+Date: 2025-03-01
 Category: Data Engineering
 Tags: dagster, deployment, infrastructure, docker, google-compute-engine
 Slug: dagster-deployment-article
