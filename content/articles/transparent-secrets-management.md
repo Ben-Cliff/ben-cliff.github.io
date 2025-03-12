@@ -4,9 +4,10 @@ Category: Engineering Culture
 Tags: secrets-management, collaboration, bus-factor, knowledge-sharing, engineering-culture
 Slug: transparent-secrets-management
 
-## Introduction
+##A Realization About Engineering Culture
 
-When designing technical solutions, it's valuable to prioritize clarity, accessibility, and shared responsibility—values that ensure an engineering culture where everyone can contribute and grow, regardless of tenure or expertise. A practical example of this approach can be seen in secrets management during infrastructure deployments, where ensuring that no single individual holds critical knowledge in isolation becomes essential.
+When I began implementing a more streamlined approach to secrets management for a new cloud deployment, my initial goal was simply to make onboarding easier. As I documented our environment variables and created shared access to deployment credentials, something unexpected happened – I realized how uncommon this practice was across teams I'd worked with previously.
+In most organizations, secrets management had been treated as privileged knowledge, accessible only to a select few "infrastructure people." This approach wasn't just inefficient; it was actively unhealthy for team dynamics and organizational resilience. Watching new engineers struggle to get basic systems running – often waiting days for the "right person" to grant access – highlighted how these seemingly minor administrative practices profoundly impact engineering culture.
 
 ## The Bus Factor Problem
 
