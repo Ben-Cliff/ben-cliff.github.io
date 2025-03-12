@@ -19,12 +19,12 @@
 
 <meta property="og:title" content="Fostering Responsible Engineering Through Transparent Secrets Management "/>
 <meta property="og:url" content="https://ben-cliff.github.io/posts/transparent-secrets-management/" />
-<meta property="og:description" content="Introduction When designing technical solutions, it&#39;s valuable to prioritize clarity, accessibility, and shared responsibility—values that ensure an engineering culture where everyone can contribute and grow, regardless of tenure or expertise. A practical example of this approach can be seen in secrets management during infrastructure deployments, where ensuring that no …" />
+<meta property="og:description" content="A Realization About Engineering Culture When I began implementing a more streamlined approach to secrets management for a new cloud deployment, my initial goal was simply to make onboarding easier. As I documented our environment variables and created shared access to deployment credentials, something unexpected happened – I realized how uncommon …" />
 <meta property="og:site_name" content="Today I Learned" />
 <meta property="og:article:author" content="Ben Cliff" />
 <meta property="og:article:published_time" content="2024-03-20T00:00:00+00:00" />
 <meta name="twitter:title" content="Fostering Responsible Engineering Through Transparent Secrets Management ">
-<meta name="twitter:description" content="Introduction When designing technical solutions, it&#39;s valuable to prioritize clarity, accessibility, and shared responsibility—values that ensure an engineering culture where everyone can contribute and grow, regardless of tenure or expertise. A practical example of this approach can be seen in secrets management during infrastructure deployments, where ensuring that no …">
+<meta name="twitter:description" content="A Realization About Engineering Culture When I began implementing a more streamlined approach to secrets management for a new cloud deployment, my initial goal was simply to make onboarding easier. As I documented our environment variables and created shared access to deployment credentials, something unexpected happened – I realized how uncommon …">
 
         <title>Fostering Responsible Engineering Through Transparent Secrets Management  · Today I Learned
 </title>
@@ -88,8 +88,9 @@
 <div class="row-fluid">
         <div class="span8 offset2 article-content">
             
-            <h2>Introduction</h2>
-<p>When designing technical solutions, it's valuable to prioritize clarity, accessibility, and shared responsibility—values that ensure an engineering culture where everyone can contribute and grow, regardless of tenure or expertise. A practical example of this approach can be seen in secrets management during infrastructure deployments, where ensuring that no single individual holds critical knowledge in isolation becomes essential.</p>
+            <h2>A Realization About Engineering Culture</h2>
+<p>When I began implementing a more streamlined approach to secrets management for a new cloud deployment, my initial goal was simply to make onboarding easier. As I documented our environment variables and created shared access to deployment credentials, something unexpected happened – I realized how uncommon this practice was across teams I'd worked with previously.
+In most organizations, secrets management had been treated as privileged knowledge, accessible only to a select few "infrastructure people." This approach wasn't just inefficient; it was actively unhealthy for team dynamics and organizational resilience. Watching new engineers struggle to get basic systems running – often waiting days for the "right person" to grant access – highlighted how these seemingly minor administrative practices profoundly impact engineering culture.</p>
 <h2>The Bus Factor Problem</h2>
 <p>The "bus factor" refers to the number of team members who would need to be unavailable (hit by a bus, so to speak) before a project stalls due to lack of knowledge or access. In many organizations, this number is dangerously low—often just one person.</p>
 <p>This creates several significant risks:</p>
