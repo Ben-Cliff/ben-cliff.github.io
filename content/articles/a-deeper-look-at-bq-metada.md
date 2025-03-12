@@ -1,5 +1,5 @@
 Title: Leveraging BigQuery Metadata Tables for Data Warehouse Governance
-Date: 2024-03-20
+Date: 2023-10-20
 Category: data engineering
 Tags: bigquery, data-warehouse, data-governance, data-lifecycle-management
 Slug: a-deeper-look-at-bq-metada
