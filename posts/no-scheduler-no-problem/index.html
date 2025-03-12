@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="https://ben-cliff.github.io/theme/css/elegant.prod.9e9d5ce754.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="https://ben-cliff.github.io/theme/css/custom.css" media="screen">
+
+        <link rel="dns-prefetch" href="//fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+
+        <meta name="author" content="Ben Cliff" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="cloud-engineering, aws, lambda, eventbridge, python, Data Engineering, " />
+
+<meta property="og:title" content="No Scheduler No Problem (kindof) "/>
+<meta property="og:url" content="https://ben-cliff.github.io/posts/no-scheduler-no-problem/" />
+<meta property="og:description" content="Improvising a Cloud Solution: no schduler no problem (kindof) The Challenge When I joined the data team within one of my previous roles, we faced a significant operational hurdle: we had no dedicated scheduler or orchestration tool for our Python-based data pipelines. This limitation became particularly problematic when we needed …" />
+<meta property="og:site_name" content="Today I Learned" />
+<meta property="og:article:author" content="Ben Cliff" />
+<meta property="og:article:published_time" content="2024-03-20T00:00:00+00:00" />
+<meta name="twitter:title" content="No Scheduler No Problem (kindof) ">
+<meta name="twitter:description" content="Improvising a Cloud Solution: no schduler no problem (kindof) The Challenge When I joined the data team within one of my previous roles, we faced a significant operational hurdle: we had no dedicated scheduler or orchestration tool for our Python-based data pipelines. This limitation became particularly problematic when we needed …">
+
+        <title>No Scheduler No Problem (kindof)  · Today I Learned
+</title>
+        <link rel="shortcut icon" href="https://ben-cliff.github.io/theme/images/favicon.ico" type="image/x-icon" />
+        <link rel="icon" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="https://ben-cliff.github.io/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-180x180.png" type="image/png" />
+
+
+
+    </head>
+    <body>
+        <div id="content">
+            <div class="navbar navbar-static-top">
+                <div class="navbar-inner">
+                    <div class="container-fluid">
+                        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </a>
+                        <a class="brand" href="https://ben-cliff.github.io/"><span class=site-name>Today I Learned</span></a>
+                        <div class="nav-collapse collapse">
+                            <ul class="nav pull-right top-menu">
+                                <li >
+                                    <a href=
+                                       https://ben-cliff.github.io
+                                    >Home</a>
+                                </li>
+                                <li ><a href="https://ben-cliff.github.io/categories.html">Categories</a></li>
+                                <li ><a href="https://ben-cliff.github.io/tags.html">Tags</a></li>
+                                <li ><a href="https://ben-cliff.github.io/archives.html">Archives</a></li>
+                                <li><form class="navbar-search" action="https://ben-cliff.github.io/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="span1"></div>
+                    <div class="span10">
+<article itemscope>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+        <h1>
+            <a href="https://ben-cliff.github.io/posts/no-scheduler-no-problem/">
+                No Scheduler No Problem (kindof)
+            </a>
+        </h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+        <div class="span8 offset2 article-content">
+            
+            <h1>Improvising a Cloud Solution: no schduler no problem (kindof)</h1>
+<h2>The Challenge</h2>
+<p>When I joined the data team within one of my previous roles, we faced a significant operational hurdle: we had no dedicated scheduler or orchestration tool for our Python-based data pipelines. This limitation became particularly problematic when we needed to regularly collect and analyze social media metrics from influencer partnerships across Instagram, TikTok, and YouTube.</p>
+<p>Our partnerships team was manually tracking post performance, which was time-consuming and error-prone. The business needed reliable metrics to measure campaign ROI, but we lacked the proper infrastructure to automate this process. Most frustratingly, we couldn't use traditional workflow orchestration tools due to organizational constraints and approval timelines.</p>
+<p>We needed a solution—and we needed it quickly, even if it meant building something that wasn't architecturally perfect.</p>
+<p><em>I've added some thoughts on this experience <a href="{static}/articles/onboarding-reflection.md">here</a> as an indication of how onboardings can tell a lot about a tech stack and culture</em></p>
+<h2>The Approach</h2>
+<p>Given the constraints, I decided to create a "hack" solution using tools I could access immediately without lengthy approval processes. Instead of waiting for proper infrastructure, I improvised with available services to get the job done:</p>
+<ol>
+<li>
+<p><strong>Repurposing Serverless Functions</strong>: I leveraged AWS Lambda as a makeshift scheduler, despite it not being designed for this purpose. While not ideal, Lambda offered a way to execute code on a schedule without requiring dedicated servers or orchestration tools.</p>
+</li>
+<li>
+<p><strong>Workaround for Time Limitations</strong>: Lambda's 15-minute execution timeout posed a significant challenge for our scraping needs. I addressed this by implementing a batch processing system that would process chunks of data within the time constraint, effectively breaking a larger job into manageable pieces.</p>
+</li>
+<li>
+<p><strong>EventBridge as an Improvised Scheduler</strong>: Without access to proper workflow tools like Airflow or Prefect, I used AWS EventBridge to trigger the Lambda functions every 15 minutes, creating a rudimentary scheduling system through multiple discrete executions.</p>
+</li>
+<li>
+<p><strong>Validation Layer for Inconsistent Data</strong>: To handle the varying data quality from manual inputs and different platform schemas, I built validation classes as a safety net, ensuring the pipeline remained functional despite upstream inconsistencies.</p>
+</li>
+</ol>
+<h2>Implementation Details</h2>
+<p>The solution was deliberately designed as a minimally viable product that could be implemented quickly without proper infrastructure:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Example of how I worked around Lambda time limitations</span>
+<span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="c1"># Get only what we can process in ~15 minutes</span>
+    <span class="n">urls</span> <span class="o">=</span> <span class="n">get_next_url_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+
+    <span class="c1"># Log starting point for debugging across executions</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing batch starting at offset </span><span class="si">{</span><span class="n">current_offset</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Process as much as we can in the available time</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+        <span class="c1"># Check remaining time to avoid timeouts</span>
+        <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">get_remaining_time_in_millis</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">30000</span><span class="p">:</span>  <span class="c1"># 30 second buffer</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Running out of time, stopping batch processing&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+
+        <span class="c1"># Process URL if time allows</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">process_social_media_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># Update processing marker for next Lambda invocation</span>
+    <span class="n">store_processing_state</span><span class="p">(</span><span class="n">current_offset</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;processed_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">),</span> <span class="s2">&quot;remaining&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)}</span>
+</code></pre></div>
+
+<p>To manage the distributed nature of this improvised solution, I created a simple state tracking mechanism:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_url_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+    <span class="c1"># Read last processed position from S3</span>
+    <span class="n">current_position</span> <span class="o">=</span> <span class="n">read_marker_from_s3</span><span class="p">()</span>
+
+    <span class="c1"># Query data source for next batch</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT url, platform_type, post_date</span>
+<span class="s2">    FROM social_media_posts</span>
+<span class="s2">    ORDER BY post_date DESC</span>
+<span class="s2">    LIMIT </span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2"> OFFSET </span><span class="si">{</span><span class="n">current_position</span><span class="si">}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get the next batch to process</span>
+    <span class="k">return</span> <span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The entire solution involved cobbling together several AWS services in ways they weren't necessarily intended to be used, but that solved our immediate problem:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Example of our makeshift scheduling mechanism</span>
+<span class="k">def</span> <span class="nf">schedule_next_execution</span><span class="p">():</span>
+    <span class="c1"># If we didn&#39;t process all URLs, ensure next Lambda runs soon</span>
+    <span class="k">if</span> <span class="n">more_urls_to_process</span><span class="p">():</span>
+        <span class="c1"># Create a one-time trigger to process more data</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">events_client</span><span class="o">.</span><span class="n">put_rule</span><span class="p">(</span>
+            <span class="n">Name</span><span class="o">=</span><span class="s2">&quot;immediate-continuation-rule&quot;</span><span class="p">,</span>
+            <span class="n">ScheduleExpression</span><span class="o">=</span><span class="s2">&quot;rate(1 minute)&quot;</span><span class="p">,</span>
+            <span class="n">State</span><span class="o">=</span><span class="s2">&quot;ENABLED&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># This creates a one-time execution to continue processing</span>
+</code></pre></div>
+
+<h2>Results and Impact</h2>
+<p>Despite being a temporary workaround, this improvised solution delivered surprisingly effective results:</p>
+<ol>
+<li>
+<p><strong>Immediate Business Value</strong>: Without waiting for proper infrastructure approval, we were able to deliver automated metrics within days rather than the months it might have taken to implement a "proper" solution.</p>
+</li>
+<li>
+<p><strong>Cost Effectiveness</strong>: The serverless approach meant we only paid for the actual execution time, keeping costs minimal compared to running dedicated servers.</p>
+</li>
+<li>
+<p><strong>Sufficient Reliability</strong>: While not architecturally elegant, the solution achieved approximately 98% data collection reliability, which was a massive improvement over the previous manual process.</p>
+</li>
+<li>
+<p><strong>Proof of Concept</strong>: The success of this hacky solution ultimately helped make the case for investing in proper data orchestration tools, as it demonstrated the clear business value of automation.</p>
+</li>
+</ol>
+<h2>Technical Challenges Overcome</h2>
+<p>Throughout this project, I encountered and solved several interesting challenges:</p>
+<ol>
+<li>
+<p><strong>Stateless to Stateful</strong>: Lambda functions are designed to be stateless, but our process needed to track progress across executions. I created a simple state tracking mechanism using S3 to store processing markers.</p>
+</li>
+<li>
+<p><strong>Timeout Management</strong>: I implemented dynamic batch sizing that would adjust based on observed processing times, ensuring we maximized throughput without hitting Lambda timeouts.</p>
+</li>
+<li>
+<p><strong>Error Containment</strong>: Since each Lambda execution processed just a small batch, failures were isolated and didn't impact the entire dataset processing.</p>
+</li>
+<li>
+<p><strong>Debugging Across Distributed Executions</strong>: I implemented comprehensive logging with execution IDs to trace processing across multiple Lambda invocations, making it possible to debug issues in this distributed system.</p>
+</li>
+</ol>
+<h2>Lessons Learned</h2>
+<p>This project taught me several valuable lessons about pragmatic problem-solving in cloud environments:</p>
+<ol>
+<li>
+<p><strong>Perfect is the enemy of done</strong>: Sometimes an imperfect solution that works today is better than a perfect solution that arrives too late.</p>
+</li>
+<li>
+<p><strong>Creative use of available tools</strong>: Cloud services can often be repurposed in creative ways when the ideal tool isn't available.</p>
+</li>
+<li>
+<p><strong>Building with evolution in mind</strong>: Even when implementing a stopgap solution, designing with eventual migration to a proper solution makes future transitions easier.</p>
+</li>
+<li>
+<p><strong>Technical debt awareness</strong>: I was transparent about the limitations of this approach from the beginning, ensuring everyone understood this was a temporary solution.</p>
+</li>
+</ol>
+<p>The "hack job" nature of this solution wasn't something to hide, but rather an example of pragmatic engineering in constrained circumstances. It demonstrated my ability to quickly deliver business value using cloud services, even when the ideal tools weren't available. Eventually, this solution was replaced with a proper orchestration system, but it served its purpose admirably during a critical time for the business.</p>
+
+
+             
+ 
+            
+            
+            
+
+
+
+
+
+
+
+            <hr/>
+        </div>
+        <section id="article-sidebar" class="span2">
+            <h4>Published</h4>
+            <time itemprop="dateCreated" datetime="2024-03-20T00:00:00+00:00">Wed 20 March 2024</time>
+            <h4>Category</h4>
+            <a class="category-link" href="https://ben-cliff.github.io/categories.html#data-engineering-ref">Data Engineering</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="https://ben-cliff.github.io/tags.html#aws-ref">aws
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#cloud-engineering-ref">cloud-engineering
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#eventbridge-ref">eventbridge
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#lambda-ref">lambda
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#python-ref">python
+                    <span class="superscript">1</span>
+</a></li>
+            </ul>
+<h4>Stay in Touch</h4>
+<div id="sidebar-social-link">
+    <a href="https://github.com/Ben-Cliff" title="" target="_blank" rel="nofollow noopener noreferrer">
+        <svg xmlns="http://www.w3.org/2000/svg" aria-label="GitHub" role="img" viewBox="0 0 512 512"><rect width="512" height="512" rx="15%" fill="#1B1817"/><path fill="#fff" d="M335 499c14 0 12 17 12 17H165s-2-17 12-17c13 0 16-6 16-12l-1-50c-71 16-86-28-86-28-12-30-28-37-28-37-24-16 1-16 1-16 26 2 40 26 40 26 22 39 59 28 74 22 2-17 9-28 16-35-57-6-116-28-116-126 0-28 10-51 26-69-3-6-11-32 3-67 0 0 21-7 70 26 42-12 86-12 128 0 49-33 70-26 70-26 14 35 6 61 3 67 16 18 26 41 26 69 0 98-60 120-117 126 10 8 18 24 18 48l-1 70c0 6 3 12 16 12z"/></svg>
+    </a>
+</div>
+            
+
+
+
+
+
+            
+
+
+
+
+
+        </section>
+</div>
+</article>
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe.
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides.
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo https://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>                    </div>
+                    <div class="span1"></div>
+                </div>
+            </div>
+        </div>
+<footer>
+    <div>
+        CC-BY-4.0
+    </div>
+
+    <div>
+        <span class="site-name">Today I Learned</span> - Daily Learning Journal
+    </div>
+
+
+
+    <div id="fpowered">
+        Powered by: <a href="http://getpelican.com/" title="Pelican Home Page" target="_blank" rel="nofollow noopener noreferrer">Pelican</a>
+        Theme: <a href="https://elegant.oncrashreboot.com/" title="Theme Elegant Home Page" target="_blank" rel="nofollow noopener noreferrer">Elegant</a>
+    </div>
+</footer>            <script src="//code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script src="https://ben-cliff.github.io/theme/js/elegant.prod.9e9d5ce754.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    <script>
+    (function () {
+        if (window.location.hash.match(/^#comment-\d+$/)) {
+            $('#comment_thread').collapse('show');
+        }
+    })();
+    window.onhashchange=function(){
+        if (window.location.hash.match(/^#comment-\d+$/))
+            window.location.reload(true);
+    }
+    $('#comment_thread').on('shown', function () {
+        var link = document.getElementById('comment-accordion-toggle');
+        var old_innerHTML = link.innerHTML;
+        $(link).fadeOut(200, function() {
+            $(this).text('Click here to hide comments').fadeIn(200);
+        });
+        $('#comment_thread').on('hidden', function () {
+            $(link).fadeOut(200, function() {
+                $(this).text(old_innerHTML).fadeIn(200);
+            });
+        })
+    })
+</script>
+
+    </body>
+    <!-- Theme: Elegant built for Pelican
+        License : MIT -->
+</html>
