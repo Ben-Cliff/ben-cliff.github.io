@@ -4,10 +4,9 @@ Date: 2024-03-20
 Category: Data Engineering
 Tags: dagster, deployment, infrastructure, docker, google-compute-engine
 Slug: dagster-deployment-article
+# Deploying Dagster: Our Infrastructure Implementation
 
 After choosing Dagster as our workflow orchestration tool, implementing a robust deployment strategy became our next challenge. This article outlines the technical approach we took to deploy Dagster in a production environment, balancing simplicity with reliability.
-
-See why we chose Dagster over Airflow, Prefect, and Google Cloud Composer [here]({static}/articles/workflow-scheduler-article.md)
 
 ## Deployment Architecture Overview
 
@@ -153,29 +152,84 @@ This workflow handles:
 
 This targeted approach minimizes disruption by avoiding a full redeployment of all containers, allowing us to update our data pipelines without affecting the underlying Dagster system.
 
-## Environment Separation
+## Environment Separation: Development, Staging, and Production
 
-We maintain distinct configurations for development and production environments:
+We maintain distinct configurations across multiple environments to support our development workflow. This multi-environment approach allows us to test changes in isolation before they impact production systems.
 
 ### Development Environment
 
-- Uses local Docker Compose setup
-- Service account keys for authentication
-- Environment variables from `.env.staging` file
+The development environment runs locally on developers' machines and serves as the first testing ground for new features:
+
+- Uses local Docker Compose setup with `docker-compose.dev.yml`
+- Service account keys with limited permissions
+- Environment variables from `.env.dev` file
 - Accessible via `localhost:3000`
+- Features hot-reloading for rapid iteration on assets and pipelines
+- Uses isolated test databases to prevent conflicts
+
+### Staging Environment
+
+Our staging environment mirrors production in infrastructure but uses separate data sources:
+
+- Is deployed locally via localhost:3000 but points to a seperate GCP project
+- Uses a staging-specific Google Cloud project to avoid resource conflicts
+- Connected to test data sources and warehouses
+- Has the same CI/CD pipeline as production but targets different infrastructure
+- Environment variables from `.env.staging` file
+- Perfect for integration testing before production deployment
+- Provides a safe environment for other teams to test their integrations with our data platform
+
 
 ### Production Environment
 
-- GCE instance with Docker Compose
+Our production environment is the most tightly controlled:
+
+- Dedicated GCE instance with Docker Compose orchestration
 - Uses instance-attached service accounts for enhanced security
 - Environment variables from `.env.prod` file
+- Connected to production data sources
+- Changes require pull request approval and successful CI checks
 - SSH tunneling for secure access:
 
 ```bash
-gcloud beta compute ssh [INSTANCE_NAME] --zone [ZONE] -- -L 5000:localhost:3000 -N -f
+gcloud beta compute ssh [PRODUCTION_INSTANCE_NAME] --zone [ZONE] -- -L 5000:localhost:3000 -N -f
 ```
 
-This setup allows developers to access the production Dagster UI via `localhost:5000` through a secure SSH tunnel.
+### Environment-Specific Configuration Management
+
+To manage these distinct environments, we've implemented several key practices:
+
+1. **Environment Segregation**: Each environment uses isolated GCP projects to prevent resource conflicts and manage permissions separately.
+
+2. **Configuration Repository**: Environment variables are stored in separate files that never enter source control. These are managed in a secure password manager and retrieved by developers as needed.
+
+3. **Resource Naming Conventions**: All resources follow a consistent naming pattern: `resource-type-{env}` where `env` is `dev`, `staging`, or `prod`.
+
+4. **Consistent Database Schemas**: We maintain identical schema structures across environments, with automated schema sync tools to keep them aligned.
+
+5. **Environment-Specific Dagster Code**: For features that require different behavior between environments, we use Dagster's built-in `RunConfig` system:
+
+```python
+@job
+def data_pipeline():
+    # Pipeline definition
+
+@repository
+def my_repo():
+    # Different configurations for different environments
+    if os.environ.get("DAGSTER_ENV") == "prod":
+        yield job(
+            data_pipeline,
+            config={"ops": {"data_processor": {"config": {"use_production_credentials": True}}}}
+        )
+    else:
+        yield job(
+            data_pipeline,
+            config={"ops": {"data_processor": {"config": {"use_production_credentials": False}}}}
+        )
+```
+
+This environment-specific configuration allows us to maintain a single codebase while adjusting behavior based on deployment context.
 
 ### Documentation Publication
 
@@ -263,6 +317,14 @@ Managing environment variables and secrets across environments presented securit
 Updating only the core container without disturbing other services required careful orchestration.
 
 **Solution**: Our CI/CD pipeline targets only the `docker_dagster_core` container, leaving other services running undisturbed.
+
+### Why SSH Tunnels Instead of a Public-Facing Dagster UI?
+
+- Team Size Reality: For a small team of four, the complexity of configuring Cloudflare, DNS records, SSL certificates, and authentication layers wasn't justified
+- Security Simplification: SSH tunnels eliminate the need to manage web server configurations, SSL certificates, or authentication layers
+- Zero Additional Infrastructure: Leverages existing GCP SSH capabilities without requiring any new services or components
+- Resource Efficiency: Limited engineering hours are better spent building data pipelines than maintaining web infrastructure - SSH tunneling took minutes to set up versus days for a proper public-facing website
+
 
 ## Future Scaling Considerations
 
