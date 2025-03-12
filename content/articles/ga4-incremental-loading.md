@@ -1,5 +1,5 @@
 Title: GA4 Incremental Processing: Handling Schema Evolution and User Identity for Marketing Attribution
-Date: 2024-03-20
+Date: 2024-08-07
 Category: Data Engineering
 Tags: dbt, bigquery, analytics, incremental-loading, GA4, event-tracking
 Slug: ga4-incremental-loading
