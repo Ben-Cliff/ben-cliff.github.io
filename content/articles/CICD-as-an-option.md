@@ -1,5 +1,5 @@
 Title: When Best Practices Meet Reality: A Lesson in Engineering Flexibility
-Date: 2024-03-20
+Date: 2024-04-11
 Category: Engineering Culture
 Tags: engineering-culture, ci/cd, git, github
 Slug: CICD-as-an-option
