@@ -1,5 +1,5 @@
 Title: No Scheduler No Problem (kindof)
-Date: 2024-03-20
+Date: 2024-04-18
 Category: Data Engineering
 Tags: cloud-engineering, aws, lambda, eventbridge, python
 Slug: no-scheduler-no-problem
