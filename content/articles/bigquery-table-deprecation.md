@@ -10,6 +10,8 @@ Slug: bigquery-table-deprecation
 
 As data warehouses grow, so does the challenge of maintaining a clean and efficient environment. In this article, I'll share a structured approach I implemented to clean up a massive BigQuery data warehouse with hundreds of unused tables consuming over 565TB of storage. This project not only resulted in significant cost savings but also improved overall data governance and warehouse performance.
 
+
+
 ## The Challenge
 
 Upon analyzing our data warehouse, I discovered several issues:
