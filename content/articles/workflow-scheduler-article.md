@@ -1,5 +1,5 @@
 Title: Modern Data Orchestration: Why Dagster Over Industry Standards - or not?
-Date: 2024-03-20
+Date: 2024-11-10
 Category: Data Engineering
 Tags: workflow-scheduler, dagster, airflow, prefect, google-cloud-composer, dlt
 Slug: workflow-scheduler-article
