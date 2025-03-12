@@ -1,5 +1,5 @@
 Title: Onboarding & Engineering Culture - how your first three weeks can predict the next 3 years
-Date: 2024-03-20
+Date: 2024-02-15
 Category: Engineering Culture
 Tags: onboarding, culture, engineering-culture
 Slug: onboarding-reflection
