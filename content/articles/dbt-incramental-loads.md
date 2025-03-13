@@ -44,5 +44,5 @@ While sharing common foundations, each implementation addressed unique challenge
 
 The following articles detail the specific approaches and technical implementations for each event source:
 
-[Mixpanel Incremental Processing]({static}/articles/ga4-incremental-loading.md)
-[GA4 Incremental Processing]({static}/articles/mixpanel-incremental-loading.md)
+[GA4 Incremental Processing]({filename}/articles/ga4-incremental-loading.md)
+[Mixpanel Incremental Processing]({filename}/articles/mixpanel-incremental-loading.md)
