@@ -1,4 +1,5 @@
 Title: Welcome to my TIL Blog
+Date: 1970-01-01
 Category: Meta
 Tags: introduction, data-engineering, berlin
 Slug: welcome
