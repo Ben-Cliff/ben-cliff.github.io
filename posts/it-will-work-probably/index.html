@@ -15,18 +15,18 @@
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary">
 
-<meta name="keywords" content="dbt, bigquery, analytics, incremental-loading, GA4, Mixpanel, event-tracking, Data Engineering, " />
+<meta name="keywords" content="engineering, organization, leadership, decision-making, Google Analytics, Mixpanel, SDK, data-warehouse, data-engineering, Engineering Culture, " />
 
-<meta property="og:title" content="Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data "/>
-<meta property="og:url" content="https://ben-cliff.github.io/posts/dbt-incremental-loads/" />
-<meta property="og:description" content="Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data Event tracking is critical for understanding user behavior, but as data volumes grow into the millions of events per day, traditional full-refresh data processing becomes unsustainable. I recently tackled this challenge by implementing specialized incremental loading patterns in DBT and BigQuery …" />
+<meta property="og:title" content="It will get done, probably "/>
+<meta property="og:url" content="https://ben-cliff.github.io/posts/it-will-work-probably/" />
+<meta property="og:description" content="We&#39;ve all had those moments when we&#39;re convinced we know better than everyone else in the room. A few years ago, I found myself in exactly this position - watching what I believed was a doomed technical decision unfold, absolutely certain I was the only one who saw the inevitable train …" />
 <meta property="og:site_name" content="Today I Learned" />
 <meta property="og:article:author" content="Ben Cliff" />
-<meta property="og:article:published_time" content="2024-08-07T00:00:00+01:00" />
-<meta name="twitter:title" content="Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data ">
-<meta name="twitter:description" content="Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data Event tracking is critical for understanding user behavior, but as data volumes grow into the millions of events per day, traditional full-refresh data processing becomes unsustainable. I recently tackled this challenge by implementing specialized incremental loading patterns in DBT and BigQuery …">
+<meta property="og:article:published_time" content="2022-11-10T00:00:00+00:00" />
+<meta name="twitter:title" content="It will get done, probably ">
+<meta name="twitter:description" content="We&#39;ve all had those moments when we&#39;re convinced we know better than everyone else in the room. A few years ago, I found myself in exactly this position - watching what I believed was a doomed technical decision unfold, absolutely certain I was the only one who saw the inevitable train …">
 
-        <title>Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data  · Today I Learned
+        <title>It will get done, probably  · Today I Learned
 </title>
         <link rel="shortcut icon" href="https://ben-cliff.github.io/theme/images/favicon.ico" type="image/x-icon" />
         <link rel="icon" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-152x152.png" type="image/png" />
@@ -78,8 +78,8 @@
 <div class="row-fluid">
     <header class="page-header span10 offset2">
         <h1>
-            <a href="https://ben-cliff.github.io/posts/dbt-incremental-loads/">
-                Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data
+            <a href="https://ben-cliff.github.io/posts/it-will-work-probably/">
+                It will get done, probably
             </a>
         </h1>
     </header>
@@ -88,45 +88,43 @@
 <div class="row-fluid">
         <div class="span8 offset2 article-content">
             
-            <h1>Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data</h1>
-<p>Event tracking is critical for understanding user behavior, but as data volumes grow into the millions of events per day, traditional full-refresh data processing becomes unsustainable. I recently tackled this challenge by implementing specialized incremental loading patterns in DBT and BigQuery for two major event sources.</p>
-<h2>Common Challenges and Solutions</h2>
-<p>Despite their differences, both GA4 and Mixpanel implementations faced several shared challenges:</p>
-<h3>Deduplication Requirements:</h3>
-<ul>
-<li>Both systems required reliable deduplication mechanisms for incremental processing to work correctly</li>
-<li>Without proper deduplication, incremental merges would fail or produce inaccurate results</li>
-<li>Both implementations needed to generate unique identifiers to track processed records</li>
-</ul>
-<h3>Incremental Processing Architecture:</h3>
-<ul>
-<li>Both solutions used DBT's incremental materialization with merge strategies</li>
-<li>Both leveraged BigQuery's partitioning and clustering for performance optimization</li>
-<li>Both implemented a 3-day lookback window to handle late-arriving data</li>
-</ul>
-<h3>Performance Optimization:</h3>
-<ul>
-<li>Both systems dramatically reduced processing time through incremental loading</li>
-<li>Both reduced computational costs by only processing new or changed data</li>
-<li>Both improved query performance through strategic partitioning and clustering</li>
-</ul>
-<h2>Key Differences</h2>
-<p>While sharing common foundations, each implementation addressed unique challenges:</p>
-<h3>GA4 Focus:</h3>
-<ul>
-<li>Schema evolution handling through table sharding</li>
-<li>User identity resolution for marketing attribution</li>
-<li>Session reconstruction for consistent user journeys</li>
-</ul>
-<h3>Mixpanel Focus:</h3>
-<ul>
-<li>Managing extremely high data volumes</li>
-<li>Handling duplicate events sent by the source system</li>
-<li>Historical data backfill while maintaining consistency</li>
-</ul>
-<p>The following articles detail the specific approaches and technical implementations for each event source:</p>
-<p><a href="https://ben-cliff.github.io/posts/ga4-incremental-loading/">GA4 Incremental Processing</a>
-<a href="https://ben-cliff.github.io/posts/mixpanel-incremental-loading/">Mixpanel Incremental Processing</a></p>
+            <p>We've all had those moments when we're convinced we know better than everyone else in the room. A few years ago, I found myself in exactly this position - watching what I believed was a doomed technical decision unfold, absolutely certain I was the only one who saw the inevitable train wreck ahead.</p>
+<h2>The Situation</h2>
+<p>Picture this: I joined as a junior data engineer, excited to learn. Then, within months, my entire team departed—manager, senior engineers, everyone. Suddenly, I was the "expert" on Google Analytics for a global company simply because I was the last one standing.</p>
+<p>This accidental inheritance came with a twist: I was responsible for all front-end analytics across the organization with virtually no authority to influence decisions. When I was eventually promoted to mid-level, it merely formalized the responsibility I'd already been shouldering, not the influence I needed.</p>
+<p>Then came a critical decision point: continue with expensive GA as it migrated from Universal Analytics to GA4, switch to another third-party solution like Mixpanel, or leverage an in-house SDK that had been developed for ad tracking.</p>
+<p>This wasn't just any SDK—it was a neglected codebase with no commits in 18 months, created by a niche team sheltered from global operations, for a very specific purpose. Red flags everywhere.</p>
+<h2>My Confident (and Wrong) Assessment</h2>
+<p>When leadership decided to go with the in-house SDK option, I was certain disaster loomed. I raised concerns about maintenance issues, knowledge gaps, and schema limitations. During meetings, I'd present detailed technical arguments only to watch them evaporate in the face of higher-level business priorities.</p>
+<p>I was the domain expert but also the youngest and newest person in the room. Directors and VPs with decades of experience nodded politely at my concerns before continuing down their chosen path. Classic responsibility without authority—I'd be accountable for implementation success but had no real say in the strategic approach.</p>
+<p>I documented my concerns, sent carefully-worded emails, and prepared contingency plans for what I saw as the inevitable failure ahead. I was so convinced of my technical assessment that I couldn't imagine any other outcome.</p>
+<p>And I was so sure I was right.</p>
+<h2>The Humbling Plot Twist</h2>
+<p>Here's where things get interesting: I was right about the challenges—and simultaneously wrong about the outcome.</p>
+<p>The implementation was exactly the nightmare I predicted. The lack of maintenance created technical debt we had to address on the fly. Knowledge gaps meant weeks of archaeological code diving and tracking down former team members for context. The schema limitations required creative workarounds that weren't pretty. We hit every single roadblock I had warned about, sometimes in ways even more frustrating than I'd anticipated.</p>
+<p>For a while, I found myself in the uncomfortable position of thinking "I told you so" while simultaneously scrambling to make things work.</p>
+<p>Yet despite all these legitimate challenges—which did indeed cause significant difficulties—the project succeeded. The implementation took longer than planned, required more resources than budgeted, and created more developer headaches than anyone had anticipated, but it worked.</p>
+<p>Why? Because I underestimated the collective intelligence, creativity, and determination of a company full of brilliant engineers. Once the decision was made from the top down, people rallied. Knowledge gaps were bridged. Maintenance issues were addressed. Schema problems were solved. The impossible became merely difficult, and difficult became done.</p>
+<p>That SDK I was convinced would fail? It's still powering front-end tracking across all the company's apps today.</p>
+<h2>What I Learned</h2>
+<p>This experience fundamentally changed how I approach large-scale technical implementations:</p>
+<ol>
+<li>
+<p><strong>Success isn't binary</strong> - "Will it work?" is the wrong question. "How well and how quickly will it work?" is much more useful.</p>
+</li>
+<li>
+<p><strong>Collective intelligence trumps individual insight</strong> - No matter how solid my technical assessment might be, the combined problem-solving capability of dozens of smart engineers will find paths forward I couldn't imagine.</p>
+</li>
+<li>
+<p><strong>Organizational momentum matters</strong> - Top-down buy-in creates unstoppable force that overcomes obstacles that seemed insurmountable from my limited vantage point.</p>
+</li>
+<li>
+<p><strong>Perfect is the enemy of done</strong> - There's never a perfect solution, but that doesn't mean we can't build something that works effectively.</p>
+</li>
+</ol>
+<p>Most importantly, I learned humility. I learned that my technical expertise, while valuable, doesn't give me perfect predictive powers. I learned to voice concerns (always important) while remaining open to being wonderfully, gloriously wrong.</p>
+<p>In the complex intersection of engineering challenges and organizational dynamics, certainty is often the first casualty—and that's actually a good thing. It makes room for collective problem-solving that produces results better than any single engineer could predict.</p>
+<p>Now when I face similar situations, I approach them with more curiosity than certainty. After all, being proven wrong in this case didn't just lead to a successful project—it made me a better engineer.</p>
 
 
              
@@ -145,31 +143,37 @@
         </div>
         <section id="article-sidebar" class="span2">
             <h4>Published</h4>
-            <time itemprop="dateCreated" datetime="2024-08-07T00:00:00+01:00">Wed 07 August 2024</time>
+            <time itemprop="dateCreated" datetime="2022-11-10T00:00:00+00:00">Thu 10 November 2022</time>
             <h4>Category</h4>
-            <a class="category-link" href="https://ben-cliff.github.io/categories.html#data-engineering-ref">Data Engineering</a>
+            <a class="category-link" href="https://ben-cliff.github.io/categories.html#engineering-culture-ref">Engineering Culture</a>
             <h4>Tags</h4>
             <ul class="list-of-tags tags-in-article">
-                <li><a href="https://ben-cliff.github.io/tags.html#analytics-ref">analytics
-                    <span class="superscript">4</span>
-</a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#bigquery-ref">bigquery
-                    <span class="superscript">5</span>
-</a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#dbt-ref">dbt
-                    <span class="superscript">3</span>
-</a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#event-tracking-ref">event-tracking
-                    <span class="superscript">3</span>
-</a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#ga4-ref">GA4
+                <li><a href="https://ben-cliff.github.io/tags.html#data-engineering-ref">data-engineering
                     <span class="superscript">2</span>
 </a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#incremental-loading-ref">incremental-loading
+                <li><a href="https://ben-cliff.github.io/tags.html#data-warehouse-ref">data-warehouse
                     <span class="superscript">3</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#decision-making-ref">decision-making
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#engineering-ref">engineering
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#google-analytics-ref">Google Analytics
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#leadership-ref">leadership
+                    <span class="superscript">1</span>
 </a></li>
                 <li><a href="https://ben-cliff.github.io/tags.html#mixpanel-ref">Mixpanel
                     <span class="superscript">3</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#organization-ref">organization
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#sdk-ref">SDK
+                    <span class="superscript">1</span>
 </a></li>
             </ul>
 <h4>Stay in Touch</h4>
