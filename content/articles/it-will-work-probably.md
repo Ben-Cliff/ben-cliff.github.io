@@ -1,6 +1,6 @@
 
 Title: It will get done, probably
-Date: 2025-03-13
+Date: 2022-11-10
 Category: Engineering
 Tags: engineering, organization, leadership, decision-making, Google Analytics, Mixpanel, SDK, data-warehouse, data-engineering
 Slug: it-will-work-probably
