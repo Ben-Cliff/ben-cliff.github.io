@@ -1,5 +1,4 @@
 Title: Welcome to my TIL Blog
-Date: 2023-06-06
 Category: Meta
 Tags: introduction, data-engineering, berlin
 Slug: welcome
