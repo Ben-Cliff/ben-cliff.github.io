@@ -15,18 +15,18 @@
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary">
 
-<meta name="keywords" content="dbt, bigquery, analytics, incremental-loading, GA4, Mixpanel, event-tracking, Data Engineering, " />
+<meta name="keywords" content="bigquery, data-warehouse, data-governance, data-lifecycle-management, data engineering, " />
 
-<meta property="og:title" content="Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data "/>
-<meta property="og:url" content="https://ben-cliff.github.io/posts/dbt-incremental-loads/" />
-<meta property="og:description" content="Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data Event tracking is critical for understanding user behavior, but as data volumes grow into the millions of events per day, traditional full-refresh data processing becomes unsustainable. I recently tackled this challenge by implementing specialized incremental loading patterns in DBT and BigQuery …" />
+<meta property="og:title" content="Safe BigQuery Insert Migration "/>
+<meta property="og:url" content="https://ben-cliff.github.io/posts/safe-bq-insert-migration/" />
+<meta property="og:description" content="Quick reminder document on how we used to migrate event stream data between BigQuery datasets while ensuring: - No duplicates were created - No data was lost - Each table&#39;s unique schema was respected Migration Process We migrated three event types from source tables to their destination counterparts: Design Creation Events Design View …" />
 <meta property="og:site_name" content="Today I Learned" />
 <meta property="og:article:author" content="Ben Cliff" />
-<meta property="og:article:published_time" content="2024-08-07T00:00:00+01:00" />
-<meta name="twitter:title" content="Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data ">
-<meta name="twitter:description" content="Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data Event tracking is critical for understanding user behavior, but as data volumes grow into the millions of events per day, traditional full-refresh data processing becomes unsustainable. I recently tackled this challenge by implementing specialized incremental loading patterns in DBT and BigQuery …">
+<meta property="og:article:published_time" content="2025-03-13T00:00:00+00:00" />
+<meta name="twitter:title" content="Safe BigQuery Insert Migration ">
+<meta name="twitter:description" content="Quick reminder document on how we used to migrate event stream data between BigQuery datasets while ensuring: - No duplicates were created - No data was lost - Each table&#39;s unique schema was respected Migration Process We migrated three event types from source tables to their destination counterparts: Design Creation Events Design View …">
 
-        <title>Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data  · Today I Learned
+        <title>Safe BigQuery Insert Migration  · Today I Learned
 </title>
         <link rel="shortcut icon" href="https://ben-cliff.github.io/theme/images/favicon.ico" type="image/x-icon" />
         <link rel="icon" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-152x152.png" type="image/png" />
@@ -78,8 +78,8 @@
 <div class="row-fluid">
     <header class="page-header span10 offset2">
         <h1>
-            <a href="https://ben-cliff.github.io/posts/dbt-incremental-loads/">
-                Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data
+            <a href="https://ben-cliff.github.io/posts/safe-bq-insert-migration/">
+                Safe BigQuery Insert Migration
             </a>
         </h1>
     </header>
@@ -88,45 +88,69 @@
 <div class="row-fluid">
         <div class="span8 offset2 article-content">
             
-            <h1>Optimizing Event Analytics: Incremental Processing Strategies for High-Volume Data</h1>
-<p>Event tracking is critical for understanding user behavior, but as data volumes grow into the millions of events per day, traditional full-refresh data processing becomes unsustainable. I recently tackled this challenge by implementing specialized incremental loading patterns in DBT and BigQuery for two major event sources.</p>
-<h2>Common Challenges and Solutions</h2>
-<p>Despite their differences, both GA4 and Mixpanel implementations faced several shared challenges:</p>
-<h3>Deduplication Requirements:</h3>
+            <p>Quick reminder document on how we used to migrate event stream data between BigQuery datasets while ensuring:
+- No duplicates were created
+- No data was lost
+- Each table's unique schema was respected</p>
+<h2>Migration Process</h2>
+<p>We migrated three event types from source tables to their destination counterparts:</p>
+<ol>
+<li>Design Creation Events</li>
+<li>Design View Events</li>
+<li>User Action Events</li>
+</ol>
+<h2>Checking Table Schemas</h2>
+<p>Before migration, we compared the table schemas to understand field mappings:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># View full table information including schema</span>
+bq<span class="w"> </span>show<span class="w"> </span>--format<span class="o">=</span>prettyjson<span class="w"> </span>project_name:source_dataset.source_table
+bq<span class="w"> </span>show<span class="w"> </span>--format<span class="o">=</span>prettyjson<span class="w"> </span>project_name:destination_dataset.destination_table
+</code></pre></div>
+
+<h2>Handling Schema Differences</h2>
+<p>We discovered significant schema differences between source and destination:
+- Source tables had simpler schemas with fewer fields
+- Destination tables included nested fields and additional tracking columns
+- Destination tables used clustering and partitioning for performance</p>
+<h2>Migration Queries</h2>
+<p>For each table pair, we crafted SQL queries that:
+1. Selected only matching fields from source
+2. Used partition filters to comply with table requirements
+3. Implemented deduplication logic</p>
+<h3>Example Migration Query</h3>
+<div class="highlight"><pre><span></span><code><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="o">`</span><span class="n">project_name</span><span class="p">.</span><span class="n">destination_dataset</span><span class="p">.</span><span class="n">event_table</span><span class="o">`</span>
+<span class="p">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">event_id</span><span class="p">,</span><span class="w"> </span><span class="n">workspace_id</span><span class="p">,</span><span class="w"> </span><span class="n">team_id</span><span class="p">,</span><span class="w"> </span><span class="n">published_at</span><span class="p">)</span>
+<span class="k">SELECT</span>
+<span class="w">  </span><span class="n">user_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">event_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">workspace_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">team_id</span><span class="p">,</span>
+<span class="w">  </span><span class="n">published_at</span>
+<span class="k">FROM</span><span class="w"> </span><span class="o">`</span><span class="n">project_name</span><span class="p">.</span><span class="n">source_dataset</span><span class="p">.</span><span class="n">event_table_copy</span><span class="o">`</span><span class="w"> </span><span class="k">source</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="o">`</span><span class="n">project_name</span><span class="p">.</span><span class="n">destination_dataset</span><span class="p">.</span><span class="n">event_table</span><span class="o">`</span><span class="w"> </span><span class="n">dest</span>
+<span class="w">  </span><span class="k">WHERE</span>
+<span class="w">    </span><span class="n">dest</span><span class="p">.</span><span class="n">event_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">source</span><span class="p">.</span><span class="n">event_id</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">dest</span><span class="p">.</span><span class="n">published_at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">source</span><span class="p">.</span><span class="n">published_at</span>
+<span class="w">    </span><span class="k">AND</span><span class="w"> </span><span class="n">dest</span><span class="p">.</span><span class="n">published_at</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="n">TIMESTAMP_SUB</span><span class="p">(</span><span class="k">CURRENT_TIMESTAMP</span><span class="p">(),</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="mi">90</span><span class="w"> </span><span class="k">DAY</span><span class="p">)</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="k">AND</span><span class="w"> </span><span class="k">source</span><span class="p">.</span><span class="n">published_at</span><span class="w"> </span><span class="k">BETWEEN</span><span class="w"> </span><span class="n">TIMESTAMP_SUB</span><span class="p">(</span><span class="k">CURRENT_TIMESTAMP</span><span class="p">(),</span><span class="w"> </span><span class="nb">INTERVAL</span><span class="w"> </span><span class="mi">90</span><span class="w"> </span><span class="k">DAY</span><span class="p">)</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">()</span>
+</code></pre></div>
+
+<h2>Key Insights</h2>
+<ol>
+<li><strong>Partition Filters</strong>: All queries required explicit time filters due to partition requirements</li>
+<li><strong>Deduplication</strong>: We used <code>NOT EXISTS</code> clauses to prevent duplicates</li>
+<li><strong>Schema Compatibility</strong>: Fields present in destination but not in source remained NULL</li>
+<li><strong>Time Scoping</strong>: Limited initial migration to last 90 days of data for manageability</li>
+</ol>
+<h2>Next Steps</h2>
 <ul>
-<li>Both systems required reliable deduplication mechanisms for incremental processing to work correctly</li>
-<li>Without proper deduplication, incremental merges would fail or produce inaccurate results</li>
-<li>Both implementations needed to generate unique identifiers to track processed records</li>
+<li>Validate data accuracy with sample queries</li>
+<li>Extend migration to older data using appropriate time ranges</li>
+<li>Monitor destination table growth and query performance</li>
 </ul>
-<h3>Incremental Processing Architecture:</h3>
-<ul>
-<li>Both solutions used DBT's incremental materialization with merge strategies</li>
-<li>Both leveraged BigQuery's partitioning and clustering for performance optimization</li>
-<li>Both implemented a 3-day lookback window to handle late-arriving data</li>
-</ul>
-<h3>Performance Optimization:</h3>
-<ul>
-<li>Both systems dramatically reduced processing time through incremental loading</li>
-<li>Both reduced computational costs by only processing new or changed data</li>
-<li>Both improved query performance through strategic partitioning and clustering</li>
-</ul>
-<h2>Key Differences</h2>
-<p>While sharing common foundations, each implementation addressed unique challenges:</p>
-<h3>GA4 Focus:</h3>
-<ul>
-<li>Schema evolution handling through table sharding</li>
-<li>User identity resolution for marketing attribution</li>
-<li>Session reconstruction for consistent user journeys</li>
-</ul>
-<h3>Mixpanel Focus:</h3>
-<ul>
-<li>Managing extremely high data volumes</li>
-<li>Handling duplicate events sent by the source system</li>
-<li>Historical data backfill while maintaining consistency</li>
-</ul>
-<p>The following articles detail the specific approaches and technical implementations for each event source:</p>
-<p><a href="https://ben-cliff.github.io/posts/ga4-incremental-loading/">GA4 Incremental Processing</a>
-<a href="https://ben-cliff.github.io/posts/mixpanel-incremental-loading/">Mixpanel Incremental Processing</a></p>
+<p>This pattern can be adapted for similar migrations between tables with differing schemas while maintaining data integrity.</p>
 
 
              
@@ -145,31 +169,22 @@
         </div>
         <section id="article-sidebar" class="span2">
             <h4>Published</h4>
-            <time itemprop="dateCreated" datetime="2024-08-07T00:00:00+01:00">Wed 07 August 2024</time>
+            <time itemprop="dateCreated" datetime="2025-03-13T00:00:00+00:00">Thu 13 March 2025</time>
             <h4>Category</h4>
-            <a class="category-link" href="https://ben-cliff.github.io/categories.html#data-engineering-ref">Data Engineering</a>
+            <a class="category-link" href="https://ben-cliff.github.io/categories.html#data-engineering-ref">data engineering</a>
             <h4>Tags</h4>
             <ul class="list-of-tags tags-in-article">
-                <li><a href="https://ben-cliff.github.io/tags.html#analytics-ref">analytics
-                    <span class="superscript">4</span>
-</a></li>
                 <li><a href="https://ben-cliff.github.io/tags.html#bigquery-ref">bigquery
                     <span class="superscript">6</span>
 </a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#dbt-ref">dbt
+                <li><a href="https://ben-cliff.github.io/tags.html#data-governance-ref">data-governance
                     <span class="superscript">3</span>
 </a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#event-tracking-ref">event-tracking
+                <li><a href="https://ben-cliff.github.io/tags.html#data-lifecycle-management-ref">data-lifecycle-management
                     <span class="superscript">3</span>
 </a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#ga4-ref">GA4
-                    <span class="superscript">2</span>
-</a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#incremental-loading-ref">incremental-loading
-                    <span class="superscript">3</span>
-</a></li>
-                <li><a href="https://ben-cliff.github.io/tags.html#mixpanel-ref">Mixpanel
-                    <span class="superscript">3</span>
+                <li><a href="https://ben-cliff.github.io/tags.html#data-warehouse-ref">data-warehouse
+                    <span class="superscript">4</span>
 </a></li>
             </ul>
 <h4>Stay in Touch</h4>
