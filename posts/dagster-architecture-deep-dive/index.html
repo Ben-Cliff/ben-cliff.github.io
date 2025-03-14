@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="https://ben-cliff.github.io/theme/css/elegant.prod.9e9d5ce754.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="https://ben-cliff.github.io/theme/css/custom.css" media="screen">
+
+        <link rel="dns-prefetch" href="//fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+
+        <meta name="author" content="Ben Cliff" />
+
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary">
+
+<meta name="keywords" content="dagster, deployment, infrastructure, docker, orchestration, gcp, ci/cd, docker-compose, Data Engineering, " />
+
+<meta property="og:title" content="Dagster Architecture Deep Dive - Part 1 "/>
+<meta property="og:url" content="https://ben-cliff.github.io/posts/dagster-architecture-deep-dive/" />
+<meta property="og:description" content="Deploying Dagster in a production environment requires understanding its multi-service architecture and how the components work together. This article explores the architecture of a production Dagster deployment, using Google Cloud Platform (GCP) as our cloud provider. Multi-Service Architecture Explanation For production deployment, we follow Dagster&#39;s recommended containerized approach. This setup …" />
+<meta property="og:site_name" content="Today I Learned" />
+<meta property="og:article:author" content="Ben Cliff" />
+<meta property="og:article:published_time" content="2025-03-14T00:00:00+00:00" />
+<meta name="twitter:title" content="Dagster Architecture Deep Dive - Part 1 ">
+<meta name="twitter:description" content="Deploying Dagster in a production environment requires understanding its multi-service architecture and how the components work together. This article explores the architecture of a production Dagster deployment, using Google Cloud Platform (GCP) as our cloud provider. Multi-Service Architecture Explanation For production deployment, we follow Dagster&#39;s recommended containerized approach. This setup …">
+
+        <title>Dagster Architecture Deep Dive - Part 1  · Today I Learned
+</title>
+        <link rel="shortcut icon" href="https://ben-cliff.github.io/theme/images/favicon.ico" type="image/x-icon" />
+        <link rel="icon" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" href="https://ben-cliff.github.io/theme/images/apple-touch-icon.png"  type="image/png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-57x57.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-72x72.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-76x76.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-114x114.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-120x120.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-144x144.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-152x152.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="https://ben-cliff.github.io/theme/images/apple-touch-icon-180x180.png" type="image/png" />
+
+
+
+    </head>
+    <body>
+        <div id="content">
+            <div class="navbar navbar-static-top">
+                <div class="navbar-inner">
+                    <div class="container-fluid">
+                        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </a>
+                        <a class="brand" href="https://ben-cliff.github.io/"><span class=site-name>Today I Learned</span></a>
+                        <div class="nav-collapse collapse">
+                            <ul class="nav pull-right top-menu">
+                                <li >
+                                    <a href=
+                                       https://ben-cliff.github.io
+                                    >Home</a>
+                                </li>
+                                <li ><a href="https://ben-cliff.github.io/categories.html">Categories</a></li>
+                                <li ><a href="https://ben-cliff.github.io/tags.html">Tags</a></li>
+                                <li ><a href="https://ben-cliff.github.io/archives.html">Archives</a></li>
+                                <li><form class="navbar-search" action="https://ben-cliff.github.io/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid">
+                <div class="row-fluid">
+                    <div class="span1"></div>
+                    <div class="span10">
+<article itemscope>
+<div class="row-fluid">
+    <header class="page-header span10 offset2">
+        <h1>
+            <a href="https://ben-cliff.github.io/posts/dagster-architecture-deep-dive/">
+                Dagster Architecture Deep Dive - Part 1
+            </a>
+        </h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+        <div class="span8 offset2 article-content">
+            
+            <p>Deploying Dagster in a production environment requires understanding its multi-service architecture and how the components work together. This article explores the architecture of a production Dagster deployment, using Google Cloud Platform (GCP) as our cloud provider.</p>
+<h2>Multi-Service Architecture Explanation</h2>
+<p>For production deployment, we follow Dagster's recommended containerized approach. This setup consists of four Docker containers, each handling different aspects of the platform. One major advantage of this pattern is that we can update our pipeline code in the <code>docker_dagster_core</code> container without interrupting the scheduler or causing downtime for the entire system.</p>
+<p>Our Dagster deployment uses the following containers, working together to form a complete environment:</p>
+<h2>Component Interactions and Communication Flow</h2>
+<p>Understanding how the components interact with each other is key to managing and troubleshooting a Dagster deployment. The following diagram illustrates the main connections between our four core containers:</p>
+<p>![Dagster Architecture Diagram]</p>
+<h3>Communication Between Components</h3>
+<p>The diagram shows how information flows through the system:</p>
+<ol>
+<li><strong>gRPC Communication</strong>:</li>
+<li>Both the webserver and daemon communicate with the <code>docker_dagster_core</code> container via gRPC</li>
+<li>This protocol enables these services to discover, load, and execute your pipeline code</li>
+<li>
+<p>gRPC offers efficient, language-agnostic communication between services</p>
+</li>
+<li>
+<p><strong>PostgreSQL as Shared Storage</strong>:</p>
+</li>
+<li>All services connect to PostgreSQL for persistent storage needs</li>
+<li>The webserver stores and retrieves UI state and run history</li>
+<li>The daemon maintains schedule and sensor state</li>
+<li>
+<p>The user code container logs events and run information</p>
+</li>
+<li>
+<p><strong>Daemon-Webserver Coordination</strong>:</p>
+</li>
+<li>The daemon and webserver communicate directly for operational purposes</li>
+<li>The daemon notifies the webserver about completed runs</li>
+<li>The webserver can request the daemon to cancel runs</li>
+<li>
+<p>They coordinate on schedule and sensor status</p>
+</li>
+<li>
+<p><strong>User Access Point</strong>:</p>
+</li>
+<li>External users interact exclusively with the webserver via HTTP</li>
+<li>The webserver presents a user-friendly interface for monitoring and controlling the system</li>
+<li>Users never communicate directly with the other containers</li>
+</ol>
+<p>This architecture creates a clean separation of responsibilities while ensuring robust communication between components. Each container has a specific role to play in the overall system:</p>
+<ul>
+<li><strong>docker_dagster_core</strong>: Houses your actual pipeline code and exposes it via a gRPC server</li>
+<li><strong>PostgreSQL</strong>: Provides persistent storage for all system state and history</li>
+<li><strong>dagster-webserver</strong>: Delivers the user interface and coordinates with other components</li>
+<li><strong>dagster-daemon</strong>: Manages background processes like schedules, sensors, and run queues</li>
+</ul>
+<p><img alt="Architecture Diagram" src="https://ben-cliff.github.io/images/dagster-architecture-diagram.svg"></p>
+<h2>Why Separate docker_dagster_core Container?</h2>
+<p>A key architectural decision in our Dagster deployment is isolating user code in its own container (<code>docker_dagster_core</code>). This approach offers several significant advantages:</p>
+<h3>CI/CD Pipeline Optimization</h3>
+<p>By isolating our application code in a dedicated container, we can implement efficient CI/CD pipelines that:</p>
+<ol>
+<li>
+<p><strong>Rebuild only what changes</strong>: When developers modify pipeline code, only the <code>docker_dagster_core</code> container needs to be rebuilt and redeployed.</p>
+</li>
+<li>
+<p><strong>Minimize downtime</strong>: The webserver, daemon, and database can remain running while the user code container is updated.</p>
+</li>
+<li>
+<p><strong>Enable rollbacks</strong>: If a deployment introduces issues, we can quickly roll back to a previous version of just the user code container.</p>
+</li>
+<li>
+<p><strong>Support targeted testing</strong>: CI pipelines can focus testing efforts on just the code that's changing.</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Example GitHub Actions workflow section for targeted deployment</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">    </span><span class="no">docker build -t docker_dagster_core -f dockerfile_dagster_core .</span>
+<span class="w">    </span><span class="no">docker push ${ARTIFACT_REGISTRY}/docker_dagster_core</span>
+
+<span class="w">    </span><span class="no"># Only restart the user code container</span>
+<span class="w">    </span><span class="no">docker-compose up -d --force-recreate docker_dagster_core</span>
+</code></pre></div>
+
+<h3>Repository Structure Flexibility</h3>
+<p>This architecture supports multiple repository organization patterns:</p>
+<ol>
+<li><strong>Monorepo approach</strong>: Keep all Dagster components and user code in a single repository (as shown in these examples).</li>
+<li>Advantages: Simpler versioning, easier to maintain consistency</li>
+<li>
+<p>Best for: Smaller teams, early-stage projects</p>
+</li>
+<li>
+<p><strong>Separate repositories</strong>: Maintain user code in its own repository, separate from infrastructure code.</p>
+</li>
+<li>Advantages: Cleaner separation of concerns, more focused repositories</li>
+<li>Best for: Larger teams, mature projects with distinct infrastructure and data teams</li>
+</ol>
+<p>The choice between these approaches depends on your team structure, development workflow, and organizational preferences. Both patterns work well with the containerized architecture described here - you would simply adjust your CI/CD pipelines to pull from the appropriate repositories.</p>
+<h2>Component Roles</h2>
+<h3>docker_dagster_core: The User Code Container</h3>
+<p>The <code>docker_dagster_core</code> container hosts your Dagster application code - your assets, ops, jobs, and any Python dependencies. It exposes this code over a gRPC server that allows the webserver and daemon to interact with it.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">docker_dagster_core</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./dockerfile_dagster_core</span>
+<span class="w">  </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker_dagster_core</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker_dagster_core_image</span>
+<span class="w">  </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">always</span>
+<span class="w">  </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;dagster&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;api&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;grpc&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-h&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;0.0.0.0&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-p&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;4000&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-f&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;/opt/dagster/dagster_home/dagster_core/__init__.py&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;4000:4000&quot;</span>
+<span class="w">  </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_USER}</span>
+<span class="w">    </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_PASSWORD}</span>
+<span class="w">    </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_DB}</span>
+<span class="w">    </span><span class="nt">DAGSTER_CURRENT_IMAGE</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;docker_dagster_core_image&quot;</span>
+<span class="w">    </span><span class="nt">GOOGLE_APPLICATION_CREDENTIALS</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/opt/dagster/dagster_home/secrets/service-account.json&quot;</span>
+<span class="w">    </span><span class="nt">GCP_PROJECT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${GCP_PROJECT}</span>
+<span class="w">    </span><span class="nt">GCP_LOCATION</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${GCP_LOCATION}</span>
+<span class="w">    </span><span class="nt">BIGQUERY_PROJECT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${GCP_PROJECT}</span>
+<span class="w">  </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-postgres</span>
+<span class="w">  </span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-network</span>
+<span class="w">  </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${GCP_SA_PATH}:/opt/dagster/dagster_home/secrets/service-account.json:ro</span>
+</code></pre></div>
+
+<p><strong>Key Points</strong>:
+- Runs a gRPC server on port 4000
+- Loads Dagster code from the repository's <code>__init__.py</code> file
+- Contains GCP configuration for interacting with Google Cloud services
+- Mounts a service account JSON file from the host for GCP authentication</p>
+<h3>dagster-postgres: The Metadata Store</h3>
+<p>The PostgreSQL container provides persistent storage for Dagster's metadata, including:
+- Run history
+- Event logs
+- Schedule state
+- Sensor state</p>
+<div class="highlight"><pre><span></span><code><span class="nt">dagster-postgres</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres:13</span>
+<span class="w">  </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_USER}</span>
+<span class="w">    </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_PASSWORD}</span>
+<span class="w">    </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_DB}</span>
+<span class="w">  </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-postgres:/var/lib/postgresql/data</span>
+<span class="w">  </span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-network</span>
+<span class="w">  </span><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD-SHELL&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;pg_isready</span><span class="nv"> </span><span class="s">-U</span><span class="nv"> </span><span class="s">${POSTGRES_USER}</span><span class="nv"> </span><span class="s">-d</span><span class="nv"> </span><span class="s">${POSTGRES_DB}&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8s</span>
+<span class="w">    </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</code></pre></div>
+
+<p><strong>Key Points</strong>:
+- Uses a named volume to persist database data
+- Includes a health check to ensure other services only start after the database is ready
+- Environment variables for credentials help maintain security best practices</p>
+<h3>dagster-webserver: The User Interface</h3>
+<p>The webserver container serves Dagster's web UI, allowing users to:
+- Explore and execute jobs
+- Monitor asset materializations
+- View run history and logs
+- Manage schedules and sensors</p>
+<div class="highlight"><pre><span></span><code><span class="nt">dagster-webserver</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dockerfile_daemon_webserver</span>
+<span class="w">  </span><span class="nt">entrypoint</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-webserver</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-h</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;0.0.0.0&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-p</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;3000&quot;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-w</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">workspace.yaml</span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;3000:3000&quot;</span>
+<span class="w">  </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">DAGSTER_HOME</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/opt/dagster/dagster_home</span>
+<span class="w">    </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_USER}</span>
+<span class="w">    </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_PASSWORD}</span>
+<span class="w">    </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_DB}</span>
+<span class="w">  </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">dagster-postgres</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
+<span class="w">    </span><span class="nt">docker_dagster_core</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_started</span>
+<span class="w">  </span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-network</span>
+</code></pre></div>
+
+<p><strong>Key Points</strong>:
+- Exposes the web UI on port 3000
+- Uses a workspace.yaml file to define code locations
+- Depends on both the database and the user code container</p>
+<h3>dagster-daemon: The Background Processor</h3>
+<p>The daemon container handles background processes such as:
+- Running schedules
+- Executing sensors
+- Managing run queues
+- Cleaning up old run data</p>
+<div class="highlight"><pre><span></span><code><span class="nt">dagster-daemon</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dockerfile_daemon_webserver</span>
+<span class="w">  </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;dagster-daemon&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;run&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">DAGSTER_HOME</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/opt/dagster/dagster_home</span>
+<span class="w">    </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_USER}</span>
+<span class="w">    </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_PASSWORD}</span>
+<span class="w">    </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${POSTGRES_DB}</span>
+<span class="w">  </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">dagster-postgres</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
+<span class="w">    </span><span class="nt">docker_dagster_core</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_started</span>
+<span class="w">  </span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-network</span>
+</code></pre></div>
+
+<p><strong>Key Points</strong>:
+- Uses the same Docker image as the webserver but with a different command
+- Does not expose any ports as it doesn't serve HTTP requests
+- Must connect to both the database and user code gRPC server</p>
+<h2>Data Flow Between Components</h2>
+<p>Understanding how data flows between components helps with troubleshooting and performance optimization.</p>
+<ol>
+<li><strong>User Code Discovery</strong>:</li>
+<li>The webserver and daemon discover user code via the gRPC server</li>
+<li>
+<p>The gRPC server loads code from the <code>__init__.py</code> file</p>
+</li>
+<li>
+<p><strong>Run Execution Flow</strong>:</p>
+</li>
+<li>User initiates a run via the UI → webserver</li>
+<li>Webserver adds run to queue in PostgreSQL</li>
+<li>Daemon picks up run from queue</li>
+<li>Daemon executes run via gRPC server</li>
+<li>Run events are logged to PostgreSQL</li>
+<li>
+<p>UI displays events by querying PostgreSQL</p>
+</li>
+<li>
+<p><strong>Schedule/Sensor Flow</strong>:</p>
+</li>
+<li>Daemon evaluates schedules and sensors</li>
+<li>When triggered, daemon adds runs to queue</li>
+<li>Execution proceeds as with manual runs</li>
+</ol>
+<h2>Configuration Management with dagster.yaml</h2>
+<p>The <code>dagster.yaml</code> file is the central configuration file for Dagster. It defines:
+- How metadata is stored
+- How run coordination works
+- Scheduler configuration
+- Logging settings</p>
+<p>Here's our <code>dagster.yaml</code> configuration:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">scheduler</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster.core.scheduler</span>
+<span class="w">  </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DagsterDaemonScheduler</span>
+
+<span class="nt">run_coordinator</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster.core.run_coordinator</span>
+<span class="w">  </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">QueuedRunCoordinator</span>
+<span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">max_concurrent_runs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+
+<span class="nt">run_storage</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster_postgres.run_storage</span>
+<span class="w">  </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PostgresRunStorage</span>
+<span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">postgres_db</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-postgres</span>
+<span class="w">      </span><span class="nt">username</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_USER</span>
+<span class="w">      </span><span class="nt">password</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_PASSWORD</span>
+<span class="w">      </span><span class="nt">db_name</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_DB</span>
+<span class="w">      </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5432</span>
+
+<span class="nt">event_log_storage</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster_postgres.event_log</span>
+<span class="w">  </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PostgresEventLogStorage</span>
+<span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">postgres_db</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-postgres</span>
+<span class="w">      </span><span class="nt">username</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_USER</span>
+<span class="w">      </span><span class="nt">password</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_PASSWORD</span>
+<span class="w">      </span><span class="nt">db_name</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_DB</span>
+<span class="w">      </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5432</span>
+
+<span class="nt">schedule_storage</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster_postgres.schedule_storage</span>
+<span class="w">  </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PostgresScheduleStorage</span>
+<span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">postgres_db</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-postgres</span>
+<span class="w">      </span><span class="nt">username</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_USER</span>
+<span class="w">      </span><span class="nt">password</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_PASSWORD</span>
+<span class="w">      </span><span class="nt">db_name</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_DB</span>
+<span class="w">      </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5432</span>
+
+<span class="nt">telemetry</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+
+<p><strong>Key Configuration Sections</strong>:</p>
+<ol>
+<li><strong>Scheduler</strong>: Uses the daemon-based scheduler for running schedules</li>
+<li><strong>Run Coordinator</strong>: Limits concurrent runs to 5 by default</li>
+<li><strong>Storage Sections</strong>: All point to PostgreSQL for persistence</li>
+<li><strong>Environment Variables</strong>: Credentials come from environment variables for security</li>
+</ol>
+<h2>Service Dependencies and Startup Order</h2>
+<p>Docker Compose helps manage service dependencies and ensures proper startup order:</p>
+<ol>
+<li><strong>PostgreSQL</strong> starts first</li>
+<li><strong>docker_dagster_core</strong> depends on PostgreSQL</li>
+<li><strong>dagster-webserver</strong> and <strong>dagster-daemon</strong> depend on both PostgreSQL and docker_dagster_core</li>
+</ol>
+<p>These dependencies are defined in the Docker Compose file and enforced through <code>depends_on</code> directives. The PostgreSQL container includes a health check, which provides a more robust dependency - services wait until PostgreSQL is actually ready to accept connections.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dagster-postgres</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
+<span class="w">  </span><span class="nt">docker_dagster_core</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_started</span>
+</code></pre></div>
+
+<p>This ensures that the webserver and daemon won't start until both the database and user code container are ready.</p>
+<h2>Network Configuration</h2>
+<p>Our services communicate over a dedicated Docker network:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">networks</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">dagster-network</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">driver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bridge</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dagster-network</span>
+</code></pre></div>
+
+<p>This network configuration provides:</p>
+<ol>
+<li><strong>Service Discovery</strong>: Containers can refer to each other by service name</li>
+<li><strong>Isolation</strong>: Services are isolated from other Docker networks</li>
+<li><strong>Security</strong>: Only explicitly exposed ports are accessible from outside</li>
+</ol>
+<p>Port mappings are defined for services that need external access:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">ports</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;3000:3000&quot;</span><span class="w">  </span><span class="c1"># For dagster-webserver</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;4000:4000&quot;</span><span class="w">  </span><span class="c1"># For docker_dagster_core</span>
+</code></pre></div>
+
+<p>The webserver UI is accessible on port 3000, while the gRPC server runs on port 4000. In production, you typically access the UI through an SSH tunnel for security.</p>
+<h2>The Workspace.yaml File</h2>
+<p>The <code>workspace.yaml</code> file tells the webserver how to connect to the gRPC server:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">load_from</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">grpc_server</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker_dagster_core</span>
+<span class="w">      </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4000</span>
+<span class="w">      </span><span class="nt">location_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dagster_core&quot;</span>
+</code></pre></div>
+
+<p>This simple configuration directs the webserver to load code from the gRPC server running in the docker_dagster_core container.</p>
+<h2>Project Directory Structure</h2>
+<p>A well-organized directory structure is essential for maintaining a clear separation between application code and deployment configuration. Here's how we structure our Dagster project:</p>
+<div class="highlight"><pre><span></span><code><span class="o">/</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">dagster_core</span><span class="o">/</span><span class="w">             </span><span class="c1"># Application code directory</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">__init__</span><span class="o">.</span><span class="n">py</span><span class="w">           </span><span class="c1"># Repository definition</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">assets</span><span class="o">/</span><span class="w">               </span><span class="c1"># Dagster assets</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">ops</span><span class="o">/</span><span class="w">                  </span><span class="c1"># Operations definitions</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">pipelines</span><span class="o">/</span><span class="w">            </span><span class="c1"># Job and pipeline definitions</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">types</span><span class="o">/</span><span class="w">                </span><span class="c1"># Custom type definitions</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">utils</span><span class="o">/</span><span class="w">                </span><span class="c1"># Helper functions</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">dagster_home</span><span class="o">/</span><span class="w">             </span><span class="c1"># Runtime directory (created during deployment)</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">dagster</span><span class="o">.</span><span class="n">yaml</span><span class="w">          </span><span class="c1"># Instance configuration</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">docker</span><span class="o">/</span><span class="w">                   </span><span class="c1"># Docker-related files</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">dockerfile_dagster_core</span><span class="w">       </span><span class="c1"># User code container definition</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">dockerfile_daemon_webserver</span><span class="w">   </span><span class="c1"># Webserver/daemon container definition</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">docker</span><span class="o">-</span><span class="n">compose</span><span class="o">-</span><span class="n">local</span><span class="o">.</span><span class="n">yml</span><span class="w">  </span><span class="c1"># Development environment configuration</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">docker</span><span class="o">-</span><span class="n">compose</span><span class="o">-</span><span class="n">GCE</span><span class="o">.</span><span class="n">yml</span><span class="w">    </span><span class="c1"># Production environment configuration</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">workspace</span><span class="o">.</span><span class="n">yaml</span><span class="w">            </span><span class="c1"># Workspace configuration</span>
+<span class="err">└──</span><span class="w"> </span><span class="n">pyproject</span><span class="o">.</span><span class="n">toml</span><span class="w">            </span><span class="c1"># Python dependencies and tools</span>
+</code></pre></div>
+
+<p>This structure provides a clean separation between:</p>
+<ol>
+<li><strong>Application Logic</strong>: All Dagster-specific code lives in the <code>dagster_core</code> directory</li>
+<li><strong>Infrastructure Configuration</strong>: Docker and deployment files at the root level</li>
+<li><strong>Runtime Configuration</strong>: Instance settings in <code>dagster_home</code></li>
+</ol>
+<p>Having this clear organization makes it easier to implement CI/CD pipelines that target only the necessary parts of the system when changes are made.</p>
+<h2>Conclusion</h2>
+<p>Dagster's multi-service architecture provides a robust, scalable foundation for data orchestration. By understanding how these components interact, you can better manage, troubleshoot, and optimize your Dagster deployment.</p>
+<p>While this article used GCP as the cloud provider, the architecture works similarly on other cloud platforms or on-premises. The key differences would be in the service account configuration and deployment mechanisms.</p>
+<p>In the next article, we'll explore how to deploy this architecture to Google Cloud Platform, including step-by-step instructions for setting up a GCE instance and configuring the deployment pipeline.</p>
+
+
+             
+ 
+            
+            
+            
+
+
+
+
+
+
+
+            <hr/>
+        </div>
+        <section id="article-sidebar" class="span2">
+            <h4>Published</h4>
+            <time itemprop="dateCreated" datetime="2025-03-14T00:00:00+00:00">Fri 14 March 2025</time>
+            <h4>Category</h4>
+            <a class="category-link" href="https://ben-cliff.github.io/categories.html#data-engineering-ref">Data Engineering</a>
+            <h4>Tags</h4>
+            <ul class="list-of-tags tags-in-article">
+                <li><a href="https://ben-cliff.github.io/tags.html#cicd-ref">ci/cd
+                    <span class="superscript">2</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#dagster-ref">dagster
+                    <span class="superscript">2</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#deployment-ref">deployment
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#docker-ref">docker
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#docker-compose-ref">docker-compose
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#gcp-ref">gcp
+                    <span class="superscript">2</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#infrastructure-ref">infrastructure
+                    <span class="superscript">1</span>
+</a></li>
+                <li><a href="https://ben-cliff.github.io/tags.html#orchestration-ref">orchestration
+                    <span class="superscript">1</span>
+</a></li>
+            </ul>
+<h4>Stay in Touch</h4>
+<div id="sidebar-social-link">
+    <a href="https://github.com/Ben-Cliff" title="" target="_blank" rel="nofollow noopener noreferrer">
+        <svg xmlns="http://www.w3.org/2000/svg" aria-label="GitHub" role="img" viewBox="0 0 512 512"><rect width="512" height="512" rx="15%" fill="#1B1817"/><path fill="#fff" d="M335 499c14 0 12 17 12 17H165s-2-17 12-17c13 0 16-6 16-12l-1-50c-71 16-86-28-86-28-12-30-28-37-28-37-24-16 1-16 1-16 26 2 40 26 40 26 22 39 59 28 74 22 2-17 9-28 16-35-57-6-116-28-116-126 0-28 10-51 26-69-3-6-11-32 3-67 0 0 21-7 70 26 42-12 86-12 128 0 49-33 70-26 70-26 14 35 6 61 3 67 16 18 26 41 26 69 0 98-60 120-117 126 10 8 18 24 18 48l-1 70c0 6 3 12 16 12z"/></svg>
+    </a>
+</div>
+            
+
+
+
+
+
+            
+
+
+
+
+
+        </section>
+</div>
+</article>
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe.
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides.
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo https://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>                    </div>
+                    <div class="span1"></div>
+                </div>
+            </div>
+        </div>
+<footer>
+    <div>
+        CC-BY-4.0
+    </div>
+
+    <div>
+        <span class="site-name">Today I Learned</span> - Daily Learning Journal
+    </div>
+
+
+
+    <div id="fpowered">
+        Powered by: <a href="http://getpelican.com/" title="Pelican Home Page" target="_blank" rel="nofollow noopener noreferrer">Pelican</a>
+        Theme: <a href="https://elegant.oncrashreboot.com/" title="Theme Elegant Home Page" target="_blank" rel="nofollow noopener noreferrer">Elegant</a>
+    </div>
+</footer>            <script src="//code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script src="https://ben-cliff.github.io/theme/js/elegant.prod.9e9d5ce754.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
+
+    <script>
+    (function () {
+        if (window.location.hash.match(/^#comment-\d+$/)) {
+            $('#comment_thread').collapse('show');
+        }
+    })();
+    window.onhashchange=function(){
+        if (window.location.hash.match(/^#comment-\d+$/))
+            window.location.reload(true);
+    }
+    $('#comment_thread').on('shown', function () {
+        var link = document.getElementById('comment-accordion-toggle');
+        var old_innerHTML = link.innerHTML;
+        $(link).fadeOut(200, function() {
+            $(this).text('Click here to hide comments').fadeIn(200);
+        });
+        $('#comment_thread').on('hidden', function () {
+            $(link).fadeOut(200, function() {
+                $(this).text(old_innerHTML).fadeIn(200);
+            });
+        })
+    })
+</script>
+
+    </body>
+    <!-- Theme: Elegant built for Pelican
+        License : MIT -->
+</html>
