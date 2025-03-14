@@ -21,6 +21,7 @@ cache/
 __pycache__/
 *.py[cod]
 *$py.class
+__pycache__/pelicanconf.cpython-311.pyc
 *.so
 .Python
 env/
