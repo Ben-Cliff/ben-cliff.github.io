@@ -54,8 +54,6 @@ The LLM is a black box, and you can't see inside it. So your job as a builder is
 
 ## We've been here before
 
-I like to think the evolution of cars from manual, automatic and autonomous to be a fair approximation to what we are seeing today with programming.
-
 In the nineties, moving from assembly to object-oriented languages felt like cheating to some people. Then Python came along and opened programming to an entirely new wave of people. Data scientists, analysts, people without traditional CS backgrounds and the purists worried again. To be fair as a data engineer, this was a little painful to watch, but also in all honesty, the work got done, and that's what pushes the needle.
 
 ## Conclusion
