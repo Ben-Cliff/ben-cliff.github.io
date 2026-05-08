@@ -1,4 +1,4 @@
-Title: Dagster Architecture Deep Dive - Part 1
+title: Dagster Architecture Deep Dive
 Date: 2025-03-14
 Category: Data Engineering
 Tags: dagster, deployment, infrastructure, docker, orchestration, gcp, ci/cd, docker-compose
