@@ -144,7 +144,7 @@
 <h3>1. Dependency Injection and Modular Tool Design</h3>
 <p>Our implementation created clear separation between the LLM's reasoning capabilities and the technical tools it could use. Instead of hardcoding functionality, we defined specific functions that the LLM could call when needed:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Example of our modular tool design (simplified)</span>
-<span class="k">def</span> <span class="nf">run_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs the assistant with the specified prompt.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">assistant</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
@@ -155,7 +155,7 @@
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
         <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error running prompt: </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">BotError</span> <span class="kn">from</span> <span class="nn">error</span>
+        <span class="k">raise</span> <span class="n">BotError</span> <span class="kn">from</span><span class="w"> </span><span class="nn">error</span>
 </code></pre></div>
 
 <p>Each tool had a specific purpose and clear interface, allowing the LLM to choose the right tool for each user query:</p>
@@ -168,7 +168,7 @@
 <h3>2. Schema-Aware Query Generation</h3>
 <p>A critical innovation in our system was making the LLM aware of the actual database schema, enabling it to generate accurate SQL:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Example of schema-aware query generation (simplified)</span>
-<span class="k">def</span> <span class="nf">_generate_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">table_names</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_generate_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">,</span> <span class="n">table_names</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates SQL for the specified goal using table metadata.&quot;&quot;&quot;</span>
     <span class="n">schemas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_db_schema</span><span class="p">(</span><span class="n">table_names</span><span class="o">=</span><span class="n">table_names</span><span class="p">)</span>
 
@@ -189,7 +189,7 @@
 <h3>3. Error Handling as a Conversation</h3>
 <p>Instead of crashing when it encountered an error, we built our system to handle errors as part of the conversation flow:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Example of conversational error handling (simplified)</span>
-<span class="k">def</span> <span class="nf">execute_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql_query</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">execute_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql_query</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Executes SQL and handles errors gracefully.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database_client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">sql_query</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
@@ -207,7 +207,7 @@
 <h3>4. Stateless Implementation with Thread Management</h3>
 <p>We designed our system to be stateless (allowing it to scale horizontally) while preserving conversation context through a thread-based architecture:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Example of thread management (simplified)</span>
-<span class="k">def</span> <span class="nf">get_thread_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conversation_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_thread_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conversation_id</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve LLM thread_id for a conversation.&quot;&quot;&quot;</span>
     <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">        SELECT thread_id</span>
@@ -227,7 +227,7 @@
 <h3>5. Comprehensive Observability</h3>
 <p>We built detailed instrumentation from the beginning, recording every step of each interaction:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Example of our observability pattern (simplified)</span>
-<span class="k">class</span> <span class="nc">BotRecorder</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BotRecorder</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Records all aspects of bot interactions.&quot;&quot;&quot;</span>
 
     <span class="n">time_of_request</span><span class="p">:</span> <span class="nb">str</span>
@@ -332,7 +332,7 @@
                     <span class="superscript">1</span>
 </a></li>
                 <li><a href="https://ben-cliff.github.io/tags.html#llm-ref">LLM
-                    <span class="superscript">1</span>
+                    <span class="superscript">2</span>
 </a></li>
                 <li><a href="https://ben-cliff.github.io/tags.html#product-ref">product
                     <span class="superscript">1</span>

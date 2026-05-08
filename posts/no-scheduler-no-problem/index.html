@@ -113,7 +113,7 @@
 <h2>Implementation Details</h2>
 <p>The solution was deliberately designed as a minimally viable product that could be implemented quickly without proper infrastructure:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Example of how I worked around Lambda time limitations</span>
-<span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
     <span class="c1"># Get only what we can process in ~15 minutes</span>
     <span class="n">urls</span> <span class="o">=</span> <span class="n">get_next_url_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
 
@@ -139,7 +139,7 @@
 </code></pre></div>
 
 <p>To manage the distributed nature of this improvised solution, I created a simple state tracking mechanism:</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_url_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_next_url_batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
     <span class="c1"># Read last processed position from S3</span>
     <span class="n">current_position</span> <span class="o">=</span> <span class="n">read_marker_from_s3</span><span class="p">()</span>
 
@@ -157,7 +157,7 @@
 
 <p>The entire solution involved cobbling together several AWS services in ways they weren't necessarily intended to be used, but that solved our immediate problem:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Example of our makeshift scheduling mechanism</span>
-<span class="k">def</span> <span class="nf">schedule_next_execution</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">schedule_next_execution</span><span class="p">():</span>
     <span class="c1"># If we didn&#39;t process all URLs, ensure next Lambda runs soon</span>
     <span class="k">if</span> <span class="n">more_urls_to_process</span><span class="p">():</span>
         <span class="c1"># Create a one-time trigger to process more data</span>

@@ -121,8 +121,8 @@
 <h2>The Solution: A Four-Phase Strategy</h2>
 <h3>Phase 1: Analytics and Discovery</h3>
 <p>The first step was a comprehensive analysis of our data warehouse to understand usage patterns and identify tables that could potentially be deprecated. I developed a Python script using the BigQuery API to gather metadata about all datasets and tables:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">google.cloud</span> <span class="kn">import</span> <span class="n">bigquery</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">bigquery</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="c1"># Initialize BigQuery client</span>
 <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
@@ -148,17 +148,17 @@
     <span class="s1">&#39;table_id&#39;</span><span class="p">,</span> <span class="s1">&#39;dataset_id&#39;</span><span class="p">,</span> <span class="s1">&#39;last_modified_date&#39;</span><span class="p">,</span> <span class="s1">&#39;size_gb&#39;</span><span class="p">,</span> <span class="s1">&#39;size_tb&#39;</span>
 <span class="p">])</span>
 
-<span class="k">def</span> <span class="nf">fetch_schemata</span><span class="p">(</span><span class="n">schemata_query</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_schemata</span><span class="p">(</span><span class="n">schemata_query</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
     <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">schemata_query</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">schemata_data_to_list</span><span class="p">(</span><span class="n">schemata_data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">schemata_data_to_list</span><span class="p">(</span><span class="n">schemata_data</span><span class="p">):</span>
     <span class="n">datasets</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">schemata_data</span><span class="p">:</span>
         <span class="n">datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">datasets</span>
 
-<span class="k">def</span> <span class="nf">query_table_metadata</span><span class="p">(</span><span class="n">dataset_list</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">dataset_tables_query</span><span class="p">,</span> <span class="n">analysis_df</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">query_table_metadata</span><span class="p">(</span><span class="n">dataset_list</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">dataset_tables_query</span><span class="p">,</span> <span class="n">analysis_df</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="n">dataset_list</span><span class="p">:</span>
         <span class="n">tables_query</span> <span class="o">=</span> <span class="n">dataset_tables_query</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
         <span class="n">bq_df</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">tables_query</span><span class="p">)</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
@@ -230,8 +230,8 @@
 <h3>Phase 3: Safe Marking and Breaking Dependencies</h3>
 <p>For tables classified as inactive or unknown, I implemented a creative approach to safely identify any undocumented dependencies. Instead of immediately deleting these tables, I added a suffix "_to_be_archived" to their names, which would intentionally break any queries or processes still depending on them.</p>
 <p>I created a Python script that would be executed through Airflow to automate this renaming process:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">google.cloud</span> <span class="kn">import</span> <span class="n">bigquery</span>
-<span class="kn">from</span> <span class="nn">google.api_core.exceptions</span> <span class="kn">import</span> <span class="n">BadRequest</span><span class="p">,</span> <span class="n">NotFound</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">bigquery</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.api_core.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">BadRequest</span><span class="p">,</span> <span class="n">NotFound</span>
 
 <span class="c1"># Initialize BigQuery client</span>
 <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
@@ -249,13 +249,13 @@
 <span class="s2">    AND table_id NOT LIKE &#39;%_to_be_archived%&#39;</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
-<span class="k">def</span> <span class="nf">check_table_type</span><span class="p">(</span><span class="n">table_dict</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_table_type</span><span class="p">(</span><span class="n">table_dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the given table ID corresponds to a TABLE type.&quot;&quot;&quot;</span>
     <span class="n">table_ref</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">dataset</span><span class="p">(</span><span class="n">table_dict</span><span class="p">[</span><span class="s1">&#39;dataset_id&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table_dict</span><span class="p">[</span><span class="s1">&#39;table_id&#39;</span><span class="p">])</span>
     <span class="n">table</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">table_ref</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">table_type</span>
 
-<span class="k">def</span> <span class="nf">add_archive_suffix</span><span class="p">(</span><span class="n">table_dict</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;_to_be_archived&#39;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_archive_suffix</span><span class="p">(</span><span class="n">table_dict</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;_to_be_archived&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add suffix to table name to identify it for archiving.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">check_table_type</span><span class="p">(</span><span class="n">table_dict</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;TABLE&quot;</span><span class="p">:</span>
         <span class="n">table_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">table_dict</span><span class="p">[</span><span class="s1">&#39;project_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">table_dict</span><span class="p">[</span><span class="s1">&#39;dataset_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">table_dict</span><span class="p">[</span><span class="s1">&#39;table_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -289,9 +289,9 @@
 <p>This approach provided a safety net: if renaming a table broke a critical process, we could quickly identify and restore it. After deploying this change, we monitored for issues over a two-week period.</p>
 <h3>Phase 4: Cleanup and Deletion</h3>
 <p>After confirming no critical processes were broken by the renamed tables, I created a final script to safely delete the marked tables:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">google.cloud</span> <span class="kn">import</span> <span class="n">bigquery</span>
-<span class="kn">from</span> <span class="nn">google.api_core.exceptions</span> <span class="kn">import</span> <span class="n">NotFound</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.cloud</span><span class="w"> </span><span class="kn">import</span> <span class="n">bigquery</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">google.api_core.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotFound</span>
 
 <span class="c1"># Initialize BigQuery client</span>
 <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
@@ -309,7 +309,7 @@
 <span class="s2">GROUP BY 1</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
-<span class="k">def</span> <span class="nf">dataset_exists</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dataset_exists</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if dataset exists.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">dataset_ref</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">)</span>
@@ -319,7 +319,7 @@
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-<span class="k">def</span> <span class="nf">delete_dataset</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">delete_dataset</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">dataset_id</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete dataset and all its contents.&quot;&quot;&quot;</span>
     <span class="n">dataset_id</span> <span class="o">=</span> <span class="s1">&#39;project-name&#39;</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">dataset_id</span>
     <span class="n">client</span><span class="o">.</span><span class="n">delete_dataset</span><span class="p">(</span>

@@ -179,7 +179,7 @@
 - Optimizes query performance with partitioning and clustering</p>
 <h3>3. Historical Data Backfill</h3>
 <p>For the initial backfill of historical data, I created a specialized Python script that could process the entire dataset chronologically while maintaining incremental processing principles:</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">process_partition_date</span><span class="p">(</span><span class="n">partition_date</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_partition_date</span><span class="p">(</span><span class="n">partition_date</span><span class="p">):</span>
     <span class="n">partition_date_str</span> <span class="o">=</span> <span class="n">partition_date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="c1"># Construct the query to insert deduplicated data</span>
