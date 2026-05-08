@@ -10,7 +10,7 @@ In the context of who I am, I spent the better part of my career as a data engin
 
 ## Friction is not your enemy
 
-A team of devs vs a system of Agents? Speed feels like an obvious win, and things get built quicker. Ideas can get shipped at a speed and quality that it's almost plausible to imagine that everyone who has access to a token or two is a senior full-stack engineer. But there's a hidden cost embedded in that speed that most entrepreneurs aren't thinking about… yet.
+Speed feels like an obvious win, and things get built quicker. Ideas can get shipped at a speed and quality that it's almost plausible to imagine that everyone who has access to a token or two is a senior full-stack engineer. But there's a hidden cost embedded in that speed that most entrepreneurs aren't thinking about… yet.
 
 Why bother talking to engineering when they will whinge about something irrelevant like "who is going to maintain this code" or design for "it's not fitting our brand book"? Why bother with all that friction when you can just get it done!
 
@@ -45,8 +45,6 @@ The brilliance of AI, within the lens of this being a cautionary tale, is that i
 This is why the cultural practices matter so much. Blameless culture, documentation, CI/CD, Bus Factor - these aren't bureaucracy. They're institutional memory. They're the way a team encodes its trauma so the next person doesn't have to repeat it.
 
 Prototype with AI so that if you get hit by a bus on the way to work, an intern could pick it up instantly - that's the goal.
-
-## Maybe the teams of devs are slower but speed might not be the only thing?
 
 Embrace the speed. But do it carefully.
 
